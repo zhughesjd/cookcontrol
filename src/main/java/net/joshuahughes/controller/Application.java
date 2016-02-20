@@ -30,7 +30,7 @@ public class Application {
 				float internal = max31855.getInternalTemperature(raw[0]);
 				float thermocouple = max31855.getThermocoupleTemperature(raw[1]);
 
-				System.out.println("Internal = " + internal + " C, Thermocouple = " + thermocouple + " C");
+				System.out.println("Internal = " + internal + " F, Thermocouple = " + thermocouple + " F");
 				if (faults != 0) {
 					onFaults(faults);
 				}

@@ -19,28 +19,23 @@ public class MAX31855 {
 	public static final byte FAULT_OPEN_CIRCUIT_BIT = 0x01; // D0
 	public static final byte FAULT_SHORT_TO_GND_BIT = 0x02; // D1
 	public static final byte FAULT_SHORT_TO_VCC_BIT = 0x04; // D2
-
 	/**
 	 * 11 of the least most significant bits (big endian) set to 1.
 	 */
 	public static final int LSB_11 = 0x07FF;
-
 	/**
 	 * 13 of the least most significant bits (big endian) set to 1.
 	 */
 	public static final int LSB_13 = 0x1FFF;
-
 	private final byte[] BUFFER = new byte[4];
-	
 	private final int channel;
 
-	final GpioController gpio = GpioFactory.getInstance();
-	final GpioPinDigitalOutput pin1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27, "MyLED1");
-	final GpioPinDigitalOutput pin2 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_28, "MyLED1");
-	final GpioPinDigitalOutput pin3 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29, "MyLED1");
-	public MAX31855(int channel) {
-		//		// provision gpio pin #01 as an output pin and turn on
+	GpioController gpio = GpioFactory.getInstance();
+	GpioPinDigitalOutput pin1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27, "MyLED1");
+	GpioPinDigitalOutput pin2 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_28, "MyLED1");
+	GpioPinDigitalOutput pin3 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29, "MyLED1");
 
+	public MAX31855(int channel) {
 		this.channel = channel;
 	}
 
@@ -51,7 +46,6 @@ public class MAX31855 {
 	 * @return Returns any faults or 0 if there were no faults
 	 */
 	public int readRaw(int[] raw,int probeIndex) {
-		System.out.println(probeIndex);
 		pin1.setState((probeIndex & 1) == 0?PinState.LOW:PinState.HIGH);
 		pin2.setState((probeIndex & 2) == 0?PinState.LOW:PinState.HIGH);
 		pin3.setState((probeIndex & 4) == 0?PinState.LOW:PinState.HIGH);
@@ -59,12 +53,10 @@ public class MAX31855 {
 			throw new IllegalArgumentException("Temperature array must have a length of 2");
 		
 		try {
-			Thread.sleep(3000l);
+			Thread.sleep(125l);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// http://stackoverflow.com/a/9128762/196486
 		Arrays.fill(BUFFER, (byte) 0); // clear buffer
 		
 		Spi.wiringPiSPIDataRW(channel, BUFFER, 4);
@@ -98,20 +90,22 @@ public class MAX31855 {
 	 * Converts raw internal temperature to actual internal temperature.
 	 * 
 	 * @param raw Raw internal temperature
-	 * @return Actual internal temperature (C)
+	 * @return Actual internal temperature (F)
 	 */
 	public float getInternalTemperature(int raw) {
-		return raw * 0.0625f;
+		float celcius = raw * 0.0625f;
+		return celcius*1.8f + 32f;
 	}
 	
 	/**
 	 * Converts raw thermocouple temperature to actual thermocouple temperature.
 	 * 
 	 * @param raw Raw thermocouple temperature
-	 * @return Actual thermocouple temperature (C)
+	 * @return Actual thermocouple temperature (F)
 	 */
 	public float getThermocoupleTemperature(int raw) {
-		return raw * 0.25f;
+		float celcius = raw * 0.25f;
+		return celcius*1.8f + 32f;
 	}
 	
 }
