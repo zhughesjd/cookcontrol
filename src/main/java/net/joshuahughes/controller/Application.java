@@ -1,6 +1,8 @@
 package net.joshuahughes.controller;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
@@ -8,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 import com.pi4j.wiringpi.Spi;
 
@@ -36,12 +39,17 @@ public class Application {
 			git = Git.open(gitDirectory);
 			git.pull();
 		}
-		File macFolder = new File(gitDirectory+macAddress);
-		if(!macFolder.exists())
+		File propertiesFile = new File(gitDirectory+"\\"+macAddress+"\\properties.txt");
+		if(!propertiesFile.exists())
 		{
-			macFolder.mkdirs();
-			
+			propertiesFile.getParentFile().mkdirs();
+			BufferedWriter bw = new BufferedWriter(new FileWriter(propertiesFile));
+			bw.write("simpleName=controller");
+			bw.close();
+			git.commit().setMessage("initial macs").call();
+			git.push().setForce(true).setCredentialsProvider( new UsernamePasswordCredentialsProvider( "zhughesjd", "manred9" ));
 		}
+		
 		System.exit(1);
 		// https://projects.drogon.net/understanding-spi-on-the-raspberry-pi/
 		// http://developer-blog.net/wp-content/uploads/2013/09/raspberry-pi-rev2-gpio-pinout.jpg
