@@ -1,7 +1,13 @@
 package net.joshuahughes.controller;
 
+import java.io.File;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import org.eclipse.jgit.api.Git;
 
 import com.pi4j.wiringpi.Spi;
 
@@ -9,8 +15,34 @@ import com.pi4j.wiringpi.Spi;
 public class Application {
 
 	static List<String> faults = new ArrayList<String>();
-
-	public static void main(String[] args) throws InterruptedException {
+	public static String macAddress = getMACAddress();
+	public static String homePath = System.getProperty("user.home");
+	public static String gitDirectoryPath = homePath+"\\smokercontroller\\";
+	public static String branch = "gh-pages";
+	public static void main(String[] args) throws Exception {
+		File gitDirectory = new File(gitDirectoryPath);
+		Git git = null;
+		if(!gitDirectory.exists())
+		{
+			git = Git.cloneRepository()
+					.setURI( "https://github.com/zhughesjd/smokercontroller.git" )
+					.setDirectory( gitDirectory )
+					.setBranchesToClone( Collections.singleton( branch ) )
+					.setBranch( branch )
+					.call();
+		}
+		else
+		{
+			git = Git.open(gitDirectory);
+			git.pull();
+		}
+		File macFolder = new File(gitDirectory+macAddress);
+		if(!macFolder.exists())
+		{
+			macFolder.mkdirs();
+			
+		}
+		System.exit(1);
 		// https://projects.drogon.net/understanding-spi-on-the-raspberry-pi/
 		// http://developer-blog.net/wp-content/uploads/2013/09/raspberry-pi-rev2-gpio-pinout.jpg
 		// http://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus
@@ -57,6 +89,21 @@ public class Application {
 		}
 
 		System.err.println(text);
+	}
+	public static final String getMACAddress()
+	{
+		try {
+			NetworkInterface network = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+			byte[] mac = network.getHardwareAddress();
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < mac.length; i++) {
+				sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));        
+			}
+			return sb.toString();
+		} catch (Exception e)
+		{
+		}
+		return "invalid";
 	}
 
 }
