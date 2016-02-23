@@ -46,8 +46,9 @@ public class Application {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(propertiesFile));
 			bw.write("simpleName=controller");
 			bw.close();
-			git.commit().setMessage("initial macs").call();
-			git.push().setForce(true).setCredentialsProvider( new UsernamePasswordCredentialsProvider( "zhughesjd", "manred9" ));
+			git.add().addFilepattern(macAddress).call();
+			git.commit().setAll(true).setMessage("test commit").call();
+			git.push().setCredentialsProvider( new UsernamePasswordCredentialsProvider( "zhughesjd", "manred9" )).call();
 		}
 		
 		System.exit(1);
