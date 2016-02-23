@@ -1,5 +1,6 @@
 package net.joshuahughes.smokercontroller.smoker;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.pi4j.io.gpio.GpioController;
@@ -9,7 +10,14 @@ import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
 import com.pi4j.wiringpi.Spi;
 
-public class MAX31855 {
+public class MAX31855x8 {
+	public static final int thermocoupleCount = 8;
+	public static final int internalIndex = thermocoupleCount;
+	public static final boolean isFaulted(float value)
+	{
+		return Float.isNaN(value);
+	}
+	public static final float faultValue = Float.NaN;
 	
 	public static final int THERMOCOUPLE_SIGN_BIT = 0x80000000; // D31
 	public static final int INTERNAL_SIGN_BIT     = 0x8000;     // D15
@@ -35,10 +43,24 @@ public class MAX31855 {
 	GpioPinDigitalOutput pin2 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_28, "MyLED1");
 	GpioPinDigitalOutput pin3 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29, "MyLED1");
 
-	public MAX31855(int channel) {
+	public MAX31855x8(int channel) {
+		int fd = Spi.wiringPiSPISetup(channel, 500000); // 500 kHz
+		if (fd == -1) {
+			throw new RuntimeException("SPI setup failed.");
+		}
 		this.channel = channel;
 	}
-
+	public float[] getTemperatures()
+	{
+		int[] raw = new int[2];
+		float[] temperatures = new float[thermocoupleCount+1];
+		for(int index=0;index<temperatures.length-1;index++){
+			ArrayList<String> faultList = onFaults(readRaw(raw,index));
+			temperatures[index] = faultList.isEmpty()?getThermocoupleTemperature(raw[1]):faultValue;
+		}
+		temperatures[temperatures.length-1] = getInternalTemperature(raw[0]);
+		return temperatures;
+	}
 	/**
 	 * Read raw temperature data.
 	 * 
@@ -107,5 +129,16 @@ public class MAX31855 {
 		float celcius = raw * 0.25f;
 		return celcius*1.8f + 32f;
 	}
-	
+	;
+	private ArrayList<String> onFaults(int faults) {
+		ArrayList<String> faultList = new ArrayList<>();
+
+		if ((faults & MAX31855x8.FAULT_OPEN_CIRCUIT_BIT) == MAX31855x8.FAULT_OPEN_CIRCUIT_BIT)
+			faultList.add("Open Circuit");
+		if ((faults & MAX31855x8.FAULT_SHORT_TO_GND_BIT) == MAX31855x8.FAULT_SHORT_TO_GND_BIT)
+			faultList.add("Short To GND");
+		if ((faults & MAX31855x8.FAULT_SHORT_TO_VCC_BIT) == MAX31855x8.FAULT_SHORT_TO_VCC_BIT)
+			faultList.add("Short To VCC");
+		return faultList;
+	}
 }

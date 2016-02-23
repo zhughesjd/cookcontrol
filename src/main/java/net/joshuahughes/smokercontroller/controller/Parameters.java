@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 public class Parameters extends FanTemperatureControl
 {
 	public long utcTime;
-	public double internalFahrenheit;
-	public LinkedHashMap<Integer,Double> indexFahrenheitMap = new LinkedHashMap<>();
+	public float[] outsideTemp;
+	public LinkedHashMap<Integer,Float> indexFahrenheitMap = new LinkedHashMap<>();
+	public double fanControlTemp;
 }

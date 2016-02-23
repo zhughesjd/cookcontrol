@@ -2,12 +2,23 @@ package net.joshuahughes.smokercontroller.smoker;
 
 import com.pi4j.wiringpi.SoftPwm;
 
-public class FanControl {
-    
-    public static void main(String[] args) throws InterruptedException {
-        
+public class Fan {
+	static
+	{
         com.pi4j.wiringpi.Gpio.wiringPiSetup();
-
+	}
+	private int min = 0;
+	private int max = 100;
+	private int pin;
+    public Fan(int pin)
+    {
+        SoftPwm.softPwmCreate(this.pin = pin, min, max);
+    }
+    public void setSpeed(double speed)
+    {
+        SoftPwm.softPwmWrite(pin, (int)(min + (max-min)*speed));    	
+    }
+    public static void main(String[] args) throws InterruptedException {
         SoftPwm.softPwmCreate(4, 0, 100);
 
         while (true) {            

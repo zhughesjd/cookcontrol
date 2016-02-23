@@ -1,62 +1,36 @@
 package net.joshuahughes.smokercontroller;
 
-import java.util.ArrayList;
-import java.util.List;
+import net.joshuahughes.smokercontroller.controller.Controller;
+import net.joshuahughes.smokercontroller.controller.FanTemperatureControl;
+import net.joshuahughes.smokercontroller.controller.GitHubController;
+import net.joshuahughes.smokercontroller.controller.Parameters;
+import net.joshuahughes.smokercontroller.function.Function;
+import net.joshuahughes.smokercontroller.function.Linear;
+import net.joshuahughes.smokercontroller.smoker.Fan;
+import net.joshuahughes.smokercontroller.smoker.MAX31855x8;
 
 import com.pi4j.wiringpi.Spi;
 
-import net.joshuahughes.smokercontroller.smoker.MAX31855;
-
-
 public class Application {
 
-	static List<String> faults = new ArrayList<String>();
 	public static void main(String[] args) throws Exception {
-		// https://projects.drogon.net/understanding-spi-on-the-raspberry-pi/
-		// http://developer-blog.net/wp-content/uploads/2013/09/raspberry-pi-rev2-gpio-pinout.jpg
-		// http://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus
-		int channel = Spi.CHANNEL_0;
-		int fd = Spi.wiringPiSPISetup(channel, 500000); // 500 kHz
-		if (fd == -1) {
-			throw new RuntimeException("SPI setup failed.");
-		}
-		// http://pi4j.com/example/control.html
-		MAX31855 max31855 = new MAX31855(channel);
-
-		int[] raw = new int[2];
-		while (true) {
-			for(int index=0;index<8;index++){
-				int faults = max31855.readRaw(raw,index);
-
-				float internal = max31855.getInternalTemperature(raw[0]);
-				float thermocouple = max31855.getThermocoupleTemperature(raw[1]);
-
-				System.out.println("Internal = " + internal + " F, Thermocouple = " + thermocouple + " F");
-				if (faults != 0) {
-					onFaults(faults);
-				}
-			}
+		Fan fan = new Fan(4);
+		Function function = new Linear();
+		Controller controller = new GitHubController();
+		MAX31855x8 max31855x8 = new MAX31855x8(Spi.CHANNEL_0);
+		while (true)
+		{	
+			float[] temps = max31855x8.getTemperatures();
+			Parameters parameters = new Parameters();
+			parameters.utcTime = System.currentTimeMillis();
+			FanTemperatureControl control = controller.get(parameters);
+			double min = control.loFarenheightBound;
+			double max = control.loFarenheightBound + control.extent;
+			double fanSpeed = function.normalize(min, max, parameters.fanControlTemp);
+			fanSpeed = Math.max(0,Math.min(1, fanSpeed));
+			fan.setSpeed(fanSpeed);
+			Thread.sleep(10000);
 		}
 	}
 
-	private static void onFaults(int f) {
-		faults.clear();
-
-		if ((f & MAX31855.FAULT_OPEN_CIRCUIT_BIT) == MAX31855.FAULT_OPEN_CIRCUIT_BIT)
-			faults.add("Open Circuit");
-		if ((f & MAX31855.FAULT_SHORT_TO_GND_BIT) == MAX31855.FAULT_SHORT_TO_GND_BIT)
-			faults.add("Short To GND");
-		if ((f & MAX31855.FAULT_SHORT_TO_VCC_BIT) == MAX31855.FAULT_SHORT_TO_VCC_BIT)
-			faults.add("Short To VCC");
-
-		boolean first = true;
-		String text = "Faults = ";
-		for (String fault : faults) {
-			if (!first)
-				text += ", ";
-			text += fault;
-		}
-
-		System.err.println(text);
-	}
 }
