@@ -1,4 +1,4 @@
-package net.joshuahughes.controller;
+package net.joshuahughes.smokercontroller.smoker;
 
 import com.pi4j.wiringpi.SoftPwm;
 
