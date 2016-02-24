@@ -47,9 +47,7 @@ public class GitHubController implements Controller{
 
 	}
 	@Override
-	public FanTemperatureControl get(Parameters input) {
-		FanTemperatureControl control = new FanTemperatureControl();
-		return control ;
+	public void process(Parameters input) {
 	}
 	public static final String getMACAddress()
 	{
@@ -65,5 +63,9 @@ public class GitHubController implements Controller{
 		{
 		}
 		return "invalid";
+	}
+	@Override
+	public Parameters initiate() {
+		return new Parameters();
 	}
 }
