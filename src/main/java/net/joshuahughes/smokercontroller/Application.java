@@ -28,8 +28,8 @@ public class Application {
 		Thermometer thermometer = isLinux?new MAX31855x8(Spi.CHANNEL_0):new SimulatedThermometer();
 		while (true)
 		{	
-			controller.process(parameters);
 			parameters.put(LongKey.utctime,System.currentTimeMillis());
+			controller.process(parameters);
 			parameters.indexTemperatureMap = thermometer.getMap();
 			Float fanTemperature =  parameters.indexTemperatureMap.get(parameters.get(IntKey.fantemperatureindex));
 			if(fanTemperature!=null)

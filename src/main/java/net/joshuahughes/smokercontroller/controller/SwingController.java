@@ -7,8 +7,11 @@ import java.awt.GridBagLayout;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map.Entry;
+import java.util.TimeZone;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -24,13 +27,20 @@ import net.joshuahughes.smokercontroller.Parameters.IntKey;
 import net.joshuahughes.smokercontroller.Parameters.Key;
 import net.joshuahughes.smokercontroller.Parameters.LongKey;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.data.time.Second;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+
 public class SwingController extends PrintStreamController {
+	public static float maxValidTemperature = 900;
 	static ByteArrayOutputStream baos = new ByteArrayOutputStream(3000);
 	Key<?>[] controllableKeys = new Key<?>[]{LongKey.sleep,FloatKey.lotemperature,FloatKey.temperaturerange,IntKey.fantemperatureindex};
 	LinkedHashMap<Key<?>,SpinnerNumberModel> modelMap = new LinkedHashMap<>();
 	JPanel controlPanel = new JPanel(new GridBagLayout());
-	JPanel graphPanel = new TemperatureChart();
 	public JTextArea textArea = new JTextArea();
+	TimeSeriesCollection dataset = new TimeSeriesCollection();
 	public SwingController(Parameters parameters) {
 		super(new PrintStream(baos));
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -53,7 +63,7 @@ public class SwingController extends PrintStreamController {
 		Container content = dlg.getContentPane();
 		content.setLayout(new BorderLayout());
 		content.add(new JScrollPane(controlPanel), BorderLayout.WEST);
-		content.add(new JScrollPane(graphPanel), BorderLayout.CENTER);
+		content.add(new JScrollPane(new ChartPanel(ChartFactory.createTimeSeriesChart("Probes", "Time","Temperature",dataset,true,true,false))), BorderLayout.CENTER);
 		content.add(new JScrollPane(textArea), BorderLayout.EAST);
 		dlg.setSize(1000, 500);
 		dlg.setVisible(true);
@@ -61,6 +71,7 @@ public class SwingController extends PrintStreamController {
 	@Override
 	public void process(Parameters parameters) {
 		super.process(parameters);
+		addToChart(parameters);
 		for(Entry<Key<?>, SpinnerNumberModel> entry : modelMap.entrySet())
 		{
 			Number value = ((Number)entry.getValue().getValue()).intValue();
@@ -70,6 +81,7 @@ public class SwingController extends PrintStreamController {
 				value = ((Number)entry.getValue().getValue()).floatValue();
 			parameters.put(entry.getKey(),value);
 		}
+
 		try {
 			baos.flush();
 			textArea.setText(baos.toString());
@@ -77,5 +89,20 @@ public class SwingController extends PrintStreamController {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	private void addToChart(Parameters parameters) {
+		Second second  = new Second(new Date(parameters.get(LongKey.utctime)), TimeZone.getTimeZone("EST"), Locale.ENGLISH);
+		for(Entry<Integer, Float> entry : parameters.indexTemperatureMap.entrySet())
+			if(entry.getValue() < maxValidTemperature)
+			{
+				int index = entry.getKey();
+				int seriesIndex = dataset.getSeriesIndex(index);
+				TimeSeries ts = null;
+				if(seriesIndex<0)
+					dataset.addSeries(ts = new TimeSeries(index));
+				else
+					ts = dataset.getSeries(seriesIndex);
+				ts.add(second, entry.getValue(), true);
+			}
 	}
 }

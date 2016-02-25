@@ -9,7 +9,7 @@ public class SimulatedThermometer implements Thermometer{
 	{
 		LinkedHashMap<Integer, Float> map = new LinkedHashMap<Integer, Float>();
 		for(int index=0;index<10;index++)
-			map.put(index,random.nextFloat());
+			map.put(index,80 + random.nextInt(20)+random.nextFloat());
 		return map ;
 	}
 }
