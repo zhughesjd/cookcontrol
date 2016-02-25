@@ -9,17 +9,21 @@ import net.joshuahughes.smokercontroller.controller.Controller;
 import net.joshuahughes.smokercontroller.controller.PrintStreamController;
 import net.joshuahughes.smokercontroller.function.Function;
 import net.joshuahughes.smokercontroller.function.Linear;
-import net.joshuahughes.smokercontroller.smoker.Fan;
+import net.joshuahughes.smokercontroller.smoker.PWMFan;
 import net.joshuahughes.smokercontroller.smoker.MAX31855x8;
 
 public class Application {
 	public static Function[] allFunctions = new Function[]{new Linear()};
 
 	public static void main(String[] args) throws Exception {
-		Fan fan = new Fan(4);
+		Parameters parameters = new Parameters();
+		if(args!=null && args.length>0)
+			parameters.load(Application.class.getResourceAsStream(args[0]));
+		System.out.println(parameters.get(Parameters.LongKey.sleep));
+		System.out.println(parameters.get(Parameters.LongKey.sleep.toString()));
+		PWMFan fan = new PWMFan(4);
 		Controller controller = new PrintStreamController();
 		MAX31855x8 max31855x8 = new MAX31855x8(Spi.CHANNEL_0);
-		Parameters parameters = new Parameters();
 		while (true)
 		{	
 			controller.process(parameters);

@@ -29,7 +29,8 @@ public class Parameters extends Properties
 	}
 	public Object get( Object key)
 	{
-		return super.get(key);
+		Key<?> enumKey = getKey(key.toString());
+		return super.get(enumKey==null?key:enumKey);
 	}
 	public LinkedHashMap<Integer,Float> indexTemperatureMap = new LinkedHashMap<>();
 	public Function function = new Linear();

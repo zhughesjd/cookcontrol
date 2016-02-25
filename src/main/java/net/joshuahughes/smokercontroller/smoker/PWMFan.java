@@ -2,7 +2,7 @@ package net.joshuahughes.smokercontroller.smoker;
 
 import com.pi4j.wiringpi.SoftPwm;
 
-public class Fan {
+public class PWMFan {
 	static
 	{
         com.pi4j.wiringpi.Gpio.wiringPiSetup();
@@ -10,7 +10,7 @@ public class Fan {
 	private int min = 0;
 	private int max = 100;
 	private int pin;
-    public Fan(int pin)
+    public PWMFan(int pin)
     {
         SoftPwm.softPwmCreate(this.pin = pin, min, max);
     }
