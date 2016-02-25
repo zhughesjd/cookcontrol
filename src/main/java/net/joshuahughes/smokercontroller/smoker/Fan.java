@@ -32,4 +32,7 @@ public class Fan {
             }
         }
     }
+	public float getRPM() {
+		return Float.NaN;
+	}
 }

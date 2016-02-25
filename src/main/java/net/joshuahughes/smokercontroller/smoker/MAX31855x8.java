@@ -2,6 +2,7 @@ package net.joshuahughes.smokercontroller.smoker;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
@@ -140,5 +141,15 @@ public class MAX31855x8 {
 		if ((faults & MAX31855x8.FAULT_SHORT_TO_VCC_BIT) == MAX31855x8.FAULT_SHORT_TO_VCC_BIT)
 			faultList.add("Short To VCC");
 		return faultList;
+	}
+	public LinkedHashMap<Integer, Float> getMap() {
+		LinkedHashMap<Integer, Float> map = new LinkedHashMap<>();
+		int[] raw = new int[2];
+		for(int index=0;index<thermocoupleCount+1;index++){
+			ArrayList<String> faultList = onFaults(readRaw(raw,index));
+			if(faultList.isEmpty())
+				map.put(index,getThermocoupleTemperature(raw[1]));
+		}
+		return map;
 	}
 }
