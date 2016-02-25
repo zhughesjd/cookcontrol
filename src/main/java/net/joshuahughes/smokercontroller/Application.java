@@ -1,5 +1,7 @@
 package net.joshuahughes.smokercontroller;
 
+import java.util.Map.Entry;
+
 import com.pi4j.wiringpi.Spi;
 
 import net.joshuahughes.smokercontroller.Parameters.FloatKey;
@@ -19,8 +21,10 @@ public class Application {
 		Parameters parameters = new Parameters();
 		if(args!=null && args.length>0)
 			parameters.load(Application.class.getResourceAsStream(args[0]));
-		System.out.println(parameters.get(Parameters.LongKey.sleep));
-		System.out.println(parameters.get(Parameters.LongKey.sleep.toString()));
+		for(Entry<Object, Object> entry : parameters.entrySet())
+		{
+			System.out.println(entry.getKey().toString()+"="+entry.getValue().toString()+"="+entry.getValue().getClass());
+		}
 		PWMFan fan = new PWMFan(4);
 		Controller controller = new PrintStreamController();
 		MAX31855x8 max31855x8 = new MAX31855x8(Spi.CHANNEL_0);
@@ -32,8 +36,8 @@ public class Application {
 			Float fanTemperature =  parameters.indexTemperatureMap.get(parameters.get(IntKey.fantemperatureindex));
 			if(fanTemperature!=null)
 			{
-				float min = parameters.get(FloatKey.lotemperature);
-				float max = min + parameters.get(FloatKey.temperaturerange);
+				float min = parameters.get(FloatKey.lotemperature).floatValue();
+				float max = min + parameters.get(FloatKey.temperaturerange).floatValue();
 				float fanSpeed = parameters.function.normalize(min, max, fanTemperature);
 				fanSpeed = Math.max(0,Math.min(1, fanSpeed));
 				fan.setSpeed(fanSpeed);
