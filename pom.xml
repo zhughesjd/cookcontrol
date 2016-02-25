@@ -33,5 +33,10 @@
 			<artifactId>org.eclipse.jgit</artifactId>
 			<version>4.2.0.201601211800-r</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jfree</groupId>
+			<artifactId>jfreechart</artifactId>
+			<version>1.0.19</version>
+		</dependency>
 	</dependencies>
 </project>

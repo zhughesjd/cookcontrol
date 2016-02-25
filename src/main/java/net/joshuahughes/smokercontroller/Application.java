@@ -23,7 +23,7 @@ public class Application {
 		Parameters parameters = new Parameters();
 		if(args!=null && args.length>0)
 			parameters.load(Application.class.getResourceAsStream(args[0]));
-		Controller controller = new SwingController();
+		Controller controller = new SwingController(parameters);
 		Fan fan = isLinux?new PWMFan(4):new SimulatedFan();
 		Thermometer thermometer = isLinux?new MAX31855x8(Spi.CHANNEL_0):new SimulatedThermometer();
 		while (true)

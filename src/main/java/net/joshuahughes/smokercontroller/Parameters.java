@@ -21,7 +21,7 @@ public class Parameters extends Properties
 	public Function function = new Linear();
 	public Parameters()
 	{
-		put(LongKey.sleep,10000l);
+		put(LongKey.sleep,1000l);
 		put(IntKey.fantemperatureindex,0);
 		put(FloatKey.lotemperature,200f);
 		put(FloatKey.temperaturerange,50f);
