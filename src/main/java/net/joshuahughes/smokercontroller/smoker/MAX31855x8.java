@@ -40,9 +40,9 @@ public class MAX31855x8 {
 	private final int channel;
 
 	GpioController gpio = GpioFactory.getInstance();
-	GpioPinDigitalOutput pin1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27, "MyLED1");
-	GpioPinDigitalOutput pin2 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_28, "MyLED1");
-	GpioPinDigitalOutput pin3 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29, "MyLED1");
+	GpioPinDigitalOutput pin1 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27, "GPIO27");
+	GpioPinDigitalOutput pin2 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_28, "GPIO28");
+	GpioPinDigitalOutput pin3 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29, "GPIO29");
 
 	public MAX31855x8(int channel) {
 		int fd = Spi.wiringPiSPISetup(channel, 500000); // 500 kHz
@@ -145,11 +145,14 @@ public class MAX31855x8 {
 	public LinkedHashMap<Integer, Float> getMap() {
 		LinkedHashMap<Integer, Float> map = new LinkedHashMap<>();
 		int[] raw = new int[2];
-		for(int index=0;index<thermocoupleCount+1;index++){
+		for(int index=0;index<thermocoupleCount;index++){
 			ArrayList<String> faultList = onFaults(readRaw(raw,index));
 			if(faultList.isEmpty())
 				map.put(index,getThermocoupleTemperature(raw[1]));
 		}
+		ArrayList<String> faultList = onFaults(readRaw(raw,internalIndex));
+		if(faultList.isEmpty())
+			map.put(internalIndex,getInternalTemperature(raw[0]));
 		return map;
 	}
 }
