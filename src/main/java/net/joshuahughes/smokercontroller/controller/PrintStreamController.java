@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 import net.joshuahughes.smokercontroller.Parameters;
 
 public class PrintStreamController implements Controller {
-	private PrintStream printStream;
+	protected PrintStream printStream;
 	public PrintStreamController()
 	{
 		this(System.out);
@@ -27,11 +27,4 @@ public class PrintStreamController implements Controller {
 		printStream.println("----------------------------");
 		printStream.println("----------------------------");
 	}
-
-	@Override
-	public Parameters initiate() {
-		return new Parameters();
-	}
-
-
 }

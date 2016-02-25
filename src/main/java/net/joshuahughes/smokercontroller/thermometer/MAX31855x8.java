@@ -1,4 +1,4 @@
-package net.joshuahughes.smokercontroller.smoker;
+package net.joshuahughes.smokercontroller.thermometer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +11,7 @@ import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
 import com.pi4j.wiringpi.Spi;
 
-public class MAX31855x8 {
+public class MAX31855x8 implements Thermometer{
 	public static final int thermocoupleCount = 8;
 	public static final int internalIndex = thermocoupleCount;
 	public static final boolean isFaulted(float value)

@@ -66,8 +66,4 @@ public class GitHubController implements Controller{
 		}
 		return "invalid";
 	}
-	@Override
-	public Parameters initiate() {
-		return new Parameters();
-	}
 }
