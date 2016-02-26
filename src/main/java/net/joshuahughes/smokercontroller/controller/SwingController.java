@@ -1,9 +1,12 @@
 package net.joshuahughes.smokercontroller.controller;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -13,19 +16,16 @@ import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 
-import javax.swing.JDialog;
+import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
-
-import net.joshuahughes.smokercontroller.Parameters;
-import net.joshuahughes.smokercontroller.Parameters.FloatKey;
-import net.joshuahughes.smokercontroller.Parameters.IntKey;
-import net.joshuahughes.smokercontroller.Parameters.Key;
-import net.joshuahughes.smokercontroller.Parameters.LongKey;
+import javax.swing.WindowConstants;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -33,14 +33,23 @@ import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 
+import net.joshuahughes.smokercontroller.Parameters;
+import net.joshuahughes.smokercontroller.Parameters.FloatKey;
+import net.joshuahughes.smokercontroller.Parameters.IntKey;
+import net.joshuahughes.smokercontroller.Parameters.Key;
+import net.joshuahughes.smokercontroller.Parameters.LongKey;
+
 public class SwingController extends PrintStreamController {
 	public static float maxValidTemperature = 900;
+	public static String sensorSeriesId = "Sensor";
+	public static String seriesKey = "SeriesKey";
 	static ByteArrayOutputStream baos = new ByteArrayOutputStream(3000);
 	Key<?>[] controllableKeys = new Key<?>[]{LongKey.sleep,FloatKey.lotemperature,FloatKey.temperaturerange,IntKey.fantemperatureindex};
 	LinkedHashMap<Key<?>,SpinnerNumberModel> modelMap = new LinkedHashMap<>();
 	JPanel controlPanel = new JPanel(new GridBagLayout());
-	public JTextArea textArea = new JTextArea();
+	JTextArea textArea = new JTextArea();
 	TimeSeriesCollection dataset = new TimeSeriesCollection();
+	JPanel boxPanel = new JPanel();
 	public SwingController(Parameters parameters) {
 		super(new PrintStream(baos));
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -59,14 +68,20 @@ public class SwingController extends PrintStreamController {
 			controlPanel.add(new JSpinner(model),gbc);
 			gbc.gridy++;
 		}
-		JDialog dlg = new JDialog();
-		Container content = dlg.getContentPane();
+		JFrame frame = new JFrame();
+		Container content = frame.getContentPane();
 		content.setLayout(new BorderLayout());
 		content.add(new JScrollPane(controlPanel), BorderLayout.WEST);
-		content.add(new JScrollPane(new ChartPanel(ChartFactory.createTimeSeriesChart("Probes", "Time","Temperature",dataset,true,true,false))), BorderLayout.CENTER);
+		ChartPanel chartPanel = new ChartPanel(ChartFactory.createTimeSeriesChart("All Probes", "Time","Temperature",dataset,true,true,false));
+		JPanel centerPanel = new JPanel(new BorderLayout());
+		centerPanel.add(chartPanel, BorderLayout.CENTER);
+		boxPanel.setLayout(new BoxLayout(boxPanel,BoxLayout.Y_AXIS));
+		centerPanel.add(boxPanel, BorderLayout.WEST);
+		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(new JScrollPane(textArea), BorderLayout.EAST);
-		dlg.setSize(1000, 500);
-		dlg.setVisible(true);
+		frame.setSize(1000, 500);
+		frame.setVisible(true);
+		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 	}
 	@Override
 	public void process(Parameters parameters) {
@@ -91,18 +106,56 @@ public class SwingController extends PrintStreamController {
 		}
 	}
 	private void addToChart(Parameters parameters) {
+		System.out.println("---------------");
 		Second second  = new Second(new Date(parameters.get(LongKey.utctime)), TimeZone.getTimeZone("EST"), Locale.ENGLISH);
-		for(Entry<Integer, Float> entry : parameters.indexTemperatureMap.entrySet())
+		for(Entry<Integer, Float> entry : parameters.probeTemperatures.entrySet())
 			if(entry.getValue() < maxValidTemperature)
 			{
-				int index = entry.getKey();
-				int seriesIndex = dataset.getSeriesIndex(index);
-				TimeSeries ts = null;
-				if(seriesIndex<0)
-					dataset.addSeries(ts = new TimeSeries(index));
-				else
-					ts = dataset.getSeries(seriesIndex);
-				ts.add(second, entry.getValue(), true);
+				Float temp = entry.getValue();
+				if(temp<maxValidTemperature)
+					getTimeSeries(entry.getKey()).add(second, temp, true);
 			}
+		Float temp = parameters.get(FloatKey.sensortemperature);
+		if(temp !=null && temp < maxValidTemperature)
+			getTimeSeries(-1).add(second, temp, true);
+	}
+	private TimeSeries getTimeSeries(int index) {
+		String id = index<0 ?"sensor": "probe "+index;
+		JCheckBox box = null;
+		for(Component component : boxPanel.getComponents())
+			if(component.getName().equals(id))
+				box = (JCheckBox) component;
+		if(box == null)
+		{
+			box = new JCheckBox()
+			{
+				private static final long serialVersionUID = 1L;
+				public String getName()
+				{
+					return ((TimeSeries)getClientProperty(sensorSeriesId)).getKey().toString();
+				}
+				public String getText()
+				{
+					if(getClientProperty(sensorSeriesId) == null) return "";
+					return ((TimeSeries)getClientProperty(sensorSeriesId)).getKey().toString();
+				}
+			};
+			TimeSeries series = new TimeSeries(id);
+			box.putClientProperty(sensorSeriesId, series);
+			boxPanel.add(box);
+			box.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if(((JCheckBox)e.getSource()).isSelected())
+						dataset.addSeries(series);
+					else
+						dataset.removeSeries(series);
+				}
+			});
+			box.setSelected(false);
+			box.doClick();
+			boxPanel.revalidate();
+		}
+		return (TimeSeries)box.getClientProperty(sensorSeriesId);
 	}
 }

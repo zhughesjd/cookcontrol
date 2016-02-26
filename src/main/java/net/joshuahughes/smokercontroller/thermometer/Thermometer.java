@@ -1,7 +1,8 @@
 package net.joshuahughes.smokercontroller.thermometer;
 
 import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 
 public interface Thermometer {
-	public LinkedHashMap<Integer, Float> getMap();
+	public Entry<Float,LinkedHashMap<Integer, Float>> getTemperatures();
 }

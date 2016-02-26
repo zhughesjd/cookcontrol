@@ -1,8 +1,10 @@
 package net.joshuahughes.smokercontroller.thermometer;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
@@ -50,17 +52,6 @@ public class MAX31855x8 implements Thermometer{
 			throw new RuntimeException("SPI setup failed.");
 		}
 		this.channel = channel;
-	}
-	public float[] getTemperatures()
-	{
-		int[] raw = new int[2];
-		float[] temperatures = new float[thermocoupleCount+1];
-		for(int index=0;index<temperatures.length-1;index++){
-			ArrayList<String> faultList = onFaults(readRaw(raw,index));
-			temperatures[index] = faultList.isEmpty()?getThermocoupleTemperature(raw[1]):faultValue;
-		}
-		temperatures[temperatures.length-1] = getInternalTemperature(raw[0]);
-		return temperatures;
 	}
 	/**
 	 * Read raw temperature data.
@@ -142,7 +133,7 @@ public class MAX31855x8 implements Thermometer{
 			faultList.add("Short To VCC");
 		return faultList;
 	}
-	public LinkedHashMap<Integer, Float> getMap() {
+	public Entry<Float,LinkedHashMap<Integer, Float>> getTemperatures() {
 		LinkedHashMap<Integer, Float> map = new LinkedHashMap<>();
 		int[] raw = new int[2];
 		for(int index=0;index<thermocoupleCount;index++){
@@ -150,9 +141,7 @@ public class MAX31855x8 implements Thermometer{
 			if(faultList.isEmpty())
 				map.put(index,getThermocoupleTemperature(raw[1]));
 		}
-		ArrayList<String> faultList = onFaults(readRaw(raw,internalIndex));
-		if(faultList.isEmpty())
-			map.put(internalIndex,getInternalTemperature(raw[0]));
-		return map;
+		onFaults(readRaw(raw,internalIndex));
+		return new AbstractMap.SimpleEntry<Float,LinkedHashMap<Integer, Float>>(getInternalTemperature(raw[0]),map);
 	}
 }

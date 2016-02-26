@@ -19,7 +19,7 @@ public class PrintStreamController implements Controller {
 		for(Entry<Object, Object> entry : parameters.entrySet())
 			printStream.println(entry.getKey().toString()+"="+entry.getValue().toString());
 		printStream.println("----------------------------");
-		for(Entry<Integer, Float> entry : parameters.indexTemperatureMap.entrySet())
+		for(Entry<Integer, Float> entry : parameters.probeTemperatures.entrySet())
 			printStream.println("tempIndex"+entry.getKey()+"="+entry.getValue());
 		printStream.println("----------------------------");
 		printStream.println("Function="+parameters.function.getClass().getSimpleName());

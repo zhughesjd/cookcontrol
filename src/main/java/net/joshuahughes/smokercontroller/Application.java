@@ -30,8 +30,9 @@ public class Application {
 		{	
 			parameters.put(LongKey.utctime,System.currentTimeMillis());
 			controller.process(parameters);
-			parameters.indexTemperatureMap = thermometer.getMap();
-			Float fanTemperature =  parameters.indexTemperatureMap.get(parameters.get(IntKey.fantemperatureindex));
+			parameters.probeTemperatures = thermometer.getTemperatures().getValue();
+			parameters.put(FloatKey.sensortemperature, thermometer.getTemperatures().getKey());
+			Float fanTemperature =  parameters.probeTemperatures.get(parameters.get(IntKey.fantemperatureindex));
 			if(fanTemperature!=null)
 			{
 				float min = parameters.get(FloatKey.lotemperature).floatValue();

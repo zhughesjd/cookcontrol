@@ -15,8 +15,7 @@ public class Parameters extends Properties
 	private static final long serialVersionUID = -3548459685215964550L;
 	public interface Key<T>{}
 	public static enum LongKey implements Key<Long>{utctime,sleep}
-	public static enum FloatArrayKey implements Key<float[]>{temperatures}
-	public static enum FloatKey implements Key<Float>{lotemperature,temperaturerange,fanrpm}
+	public static enum FloatKey implements Key<Float>{sensortemperature,lotemperature,temperaturerange,fanrpm}
 	public static enum IntKey implements Key<Integer>{fantemperatureindex}
 	public Function function = new Linear();
 	public Parameters()
@@ -40,14 +39,13 @@ public class Parameters extends Properties
 		Key<?> enumKey = getKeyValue(key.toString(),null).getKey();
 		return super.get(enumKey==null?key:enumKey);
 	}
-	public LinkedHashMap<Integer,Float> indexTemperatureMap = new LinkedHashMap<>();
+	public LinkedHashMap<Integer,Float> probeTemperatures = new LinkedHashMap<>();
 	private static <T> Entry<Key<T>,T> getKeyValue(String stringKey,String stringValue) {
 		Key<T> key = null;
 		T value = null;
 		try{key = (Key<T>) LongKey.valueOf(stringKey);value = (T)new Long(Long.parseLong(stringValue));}catch(Exception e){}
 		try{key = (Key<T>) FloatKey.valueOf(stringKey);value = (T)new Float(Float.parseFloat(stringValue));}catch(Exception e){}
 		try{key = (Key<T>) IntKey.valueOf(stringKey);value = (T)new Integer(Integer.parseInt(stringValue));}catch(Exception e){}
-		try{key = (Key<T>) FloatArrayKey.valueOf(stringKey);}catch(Exception e){}
 		return new AbstractMap.SimpleEntry<Key<T>,T>(key,value);
 	}
 }
