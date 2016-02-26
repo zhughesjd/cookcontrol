@@ -5,8 +5,11 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.ByteArrayOutputStream;
@@ -27,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.WindowConstants;
 
@@ -129,7 +133,7 @@ public class SwingController extends PrintStreamController {
 				box = (JCheckBoxButton) component;
 		if(box == null)
 		{
-			box = new JCheckBoxButton(new TimeSeries(feature.toString()));
+			box = new JCheckBoxButton(new TimeSeries(feature));
 			boxPanel.add(box);
 			boxPanel.revalidate();	
 		}
@@ -139,14 +143,19 @@ public class SwingController extends PrintStreamController {
 	{
 		private static final long serialVersionUID = 1L;
 		TimeSeries ts;
-		JLabel label = new JLabel();
+		JLabel label = new JLabel(){
+			private static final long serialVersionUID = 1L;
+			public String getText(){
+				if(ts == null) return "";
+				return ts.getKey().toString();
+			}
+		};
 		JCheckBox box = new JCheckBox("",true);
 		public JCheckBoxButton(TimeSeries ts)
 		{
 			super(new BorderLayout());
 			putClientProperty(sensorSeriesId, ts);
 			this.ts = ts;
-			ts.setRangeDescription("ssssfdsfds");
 			add(box,BorderLayout.WEST);
 			add(label,BorderLayout.CENTER);
 			label.setText(ts.getKey().toString());
@@ -177,9 +186,33 @@ public class SwingController extends PrintStreamController {
 	}
 	public class ProbeEditorDialog extends JDialog
 	{
-
+		public JTextField idField = new JTextField();
+		
 		public ProbeEditorDialog(TimeSeries ts)
 		{
+			idField.setText(ts.getKey().toString());
+			Container container = this.getContentPane();
+			container.setLayout(new GridLayout(2,2));
+			container.add(new JLabel("id:"));
+			container.add(idField);
+			container.add(new JTextArea());
+			idField.addFocusListener(new FocusListener() {
+				
+				@Override
+				public void focusLost(FocusEvent e)
+				{
+					Thermometer thermometer = (Thermometer) ts.getKey();
+					thermometer.setId(idField.getText());
+					idField.setText(thermometer.getId());
+					boxPanel.revalidate();
+				}
+				
+				@Override
+				public void focusGained(FocusEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+			});
 		}
 		private static final long serialVersionUID = -5717230415060288563L;
 		
