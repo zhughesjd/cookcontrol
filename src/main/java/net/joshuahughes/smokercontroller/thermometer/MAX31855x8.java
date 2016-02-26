@@ -13,7 +13,7 @@ import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
 import com.pi4j.wiringpi.Spi;
 
-public class MAX31855x8 implements Thermometer{
+public class MAX31855x8 implements TemperatureCollection{
 	public static final int thermocoupleCount = 8;
 	public static final int internalIndex = thermocoupleCount;
 	public static final boolean isFaulted(float value)

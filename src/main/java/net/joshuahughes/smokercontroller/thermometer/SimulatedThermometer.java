@@ -5,7 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.Random;
 
-public class SimulatedThermometer implements Thermometer{
+public class SimulatedThermometer implements TemperatureCollection{
 	Random random = new Random(767676709l);
 	private float sensorTemp = 77;
 	public Entry<Float,LinkedHashMap<Integer, Float>> getTemperatures()

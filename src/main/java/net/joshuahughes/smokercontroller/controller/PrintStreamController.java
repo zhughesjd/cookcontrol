@@ -4,6 +4,7 @@ import java.io.PrintStream;
 import java.util.Map.Entry;
 
 import net.joshuahughes.smokercontroller.Parameters;
+import net.joshuahughes.smokercontroller.Parameters.Thermometer;
 
 public class PrintStreamController implements Controller {
 	protected PrintStream printStream;
@@ -19,8 +20,8 @@ public class PrintStreamController implements Controller {
 		for(Entry<Object, Object> entry : parameters.entrySet())
 			printStream.println(entry.getKey().toString()+"="+entry.getValue().toString());
 		printStream.println("----------------------------");
-		for(Entry<Integer, Float> entry : parameters.probeTemperatures.entrySet())
-			printStream.println("tempIndex"+entry.getKey()+"="+entry.getValue());
+		for(Entry<Thermometer, Float> entry : parameters.getTemperatureEntries())
+			printStream.println(entry.getKey()+"="+entry.getValue());
 		printStream.println("----------------------------");
 		printStream.println("Function="+parameters.function.getClass().getSimpleName());
 		printStream.println("----------------------------");

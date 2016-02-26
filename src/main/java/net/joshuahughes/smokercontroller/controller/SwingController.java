@@ -7,6 +7,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -18,6 +20,7 @@ import java.util.TimeZone;
 
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -27,17 +30,18 @@ import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.WindowConstants;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.data.time.Second;
-import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
-
 import net.joshuahughes.smokercontroller.Parameters;
 import net.joshuahughes.smokercontroller.Parameters.FloatKey;
 import net.joshuahughes.smokercontroller.Parameters.IntKey;
 import net.joshuahughes.smokercontroller.Parameters.Key;
 import net.joshuahughes.smokercontroller.Parameters.LongKey;
+import net.joshuahughes.smokercontroller.Parameters.Thermometer;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.data.time.Second;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
 
 public class SwingController extends PrintStreamController {
 	public static float maxValidTemperature = 900;
@@ -106,9 +110,8 @@ public class SwingController extends PrintStreamController {
 		}
 	}
 	private void addToChart(Parameters parameters) {
-		System.out.println("---------------");
 		Second second  = new Second(new Date(parameters.get(LongKey.utctime)), TimeZone.getTimeZone("EST"), Locale.ENGLISH);
-		for(Entry<Integer, Float> entry : parameters.probeTemperatures.entrySet())
+		for(Entry<Thermometer, Float> entry : parameters.getTemperatureEntries())
 			if(entry.getValue() < maxValidTemperature)
 			{
 				Float temp = entry.getValue();
@@ -117,45 +120,68 @@ public class SwingController extends PrintStreamController {
 			}
 		Float temp = parameters.get(FloatKey.sensortemperature);
 		if(temp !=null && temp < maxValidTemperature)
-			getTimeSeries(-1).add(second, temp, true);
+			getTimeSeries(parameters.sensorFeature).add(second, temp, true);
 	}
-	private TimeSeries getTimeSeries(int index) {
-		String id = index<0 ?"sensor": "probe "+index;
-		JCheckBox box = null;
+	private TimeSeries getTimeSeries(Thermometer feature) {
+		JCheckBoxButton box = null;
 		for(Component component : boxPanel.getComponents())
-			if(component.getName().equals(id))
-				box = (JCheckBox) component;
+			if(component.getName().equals(feature.toString()))
+				box = (JCheckBoxButton) component;
 		if(box == null)
 		{
-			box = new JCheckBox()
-			{
-				private static final long serialVersionUID = 1L;
-				public String getName()
-				{
-					return ((TimeSeries)getClientProperty(sensorSeriesId)).getKey().toString();
-				}
-				public String getText()
-				{
-					if(getClientProperty(sensorSeriesId) == null) return "";
-					return ((TimeSeries)getClientProperty(sensorSeriesId)).getKey().toString();
-				}
-			};
-			TimeSeries series = new TimeSeries(id);
-			box.putClientProperty(sensorSeriesId, series);
+			box = new JCheckBoxButton(new TimeSeries(feature.toString()));
 			boxPanel.add(box);
+			boxPanel.revalidate();	
+		}
+		return (TimeSeries)box.getClientProperty(sensorSeriesId);
+	}
+	public class JCheckBoxButton extends JPanel
+	{
+		private static final long serialVersionUID = 1L;
+		TimeSeries ts;
+		JLabel label = new JLabel();
+		JCheckBox box = new JCheckBox("",true);
+		public JCheckBoxButton(TimeSeries ts)
+		{
+			super(new BorderLayout());
+			putClientProperty(sensorSeriesId, ts);
+			this.ts = ts;
+			ts.setRangeDescription("ssssfdsfds");
+			add(box,BorderLayout.WEST);
+			add(label,BorderLayout.CENTER);
+			label.setText(ts.getKey().toString());
 			box.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					if(((JCheckBox)e.getSource()).isSelected())
-						dataset.addSeries(series);
+					if(box.isSelected())
+						dataset.addSeries(ts);
 					else
-						dataset.removeSeries(series);
+						dataset.removeSeries(ts);
 				}
 			});
 			box.setSelected(false);
 			box.doClick();
-			boxPanel.revalidate();
+			label.addMouseListener(new MouseAdapter(){
+				public void mouseClicked(MouseEvent e)
+				{
+					ProbeEditorDialog dlg = new ProbeEditorDialog(ts);
+					dlg.setVisible(true);
+					dlg.setSize(300,300);
+				}
+			});
 		}
-		return (TimeSeries)box.getClientProperty(sensorSeriesId);
+		public String getName()
+		{
+			return ts.getKey().toString();
+		}
+	}
+	public class ProbeEditorDialog extends JDialog
+	{
+
+		public ProbeEditorDialog(TimeSeries ts)
+		{
+		}
+		private static final long serialVersionUID = -5717230415060288563L;
+		
 	}
 }

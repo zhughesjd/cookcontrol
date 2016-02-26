@@ -12,7 +12,7 @@ import net.joshuahughes.smokercontroller.function.Function;
 import net.joshuahughes.smokercontroller.function.Linear;
 import net.joshuahughes.smokercontroller.thermometer.MAX31855x8;
 import net.joshuahughes.smokercontroller.thermometer.SimulatedThermometer;
-import net.joshuahughes.smokercontroller.thermometer.Thermometer;
+import net.joshuahughes.smokercontroller.thermometer.TemperatureCollection;
 
 import com.pi4j.wiringpi.Spi;
 
@@ -25,14 +25,13 @@ public class Application {
 			parameters.load(Application.class.getResourceAsStream(args[0]));
 		Controller controller = new SwingController(parameters);
 		Fan fan = isLinux?new PWMFan(4):new SimulatedFan();
-		Thermometer thermometer = isLinux?new MAX31855x8(Spi.CHANNEL_0):new SimulatedThermometer();
+		TemperatureCollection thermometerSet = isLinux?new MAX31855x8(Spi.CHANNEL_0):new SimulatedThermometer();
 		while (true)
 		{	
 			parameters.put(LongKey.utctime,System.currentTimeMillis());
 			controller.process(parameters);
-			parameters.probeTemperatures = thermometer.getTemperatures().getValue();
-			parameters.put(FloatKey.sensortemperature, thermometer.getTemperatures().getKey());
-			Float fanTemperature =  parameters.probeTemperatures.get(parameters.get(IntKey.fantemperatureindex));
+			parameters.process(thermometerSet.getTemperatures());
+			Float fanTemperature =  parameters.getLatestTemperature(parameters.get(IntKey.fantemperatureindex));
 			if(fanTemperature!=null)
 			{
 				float min = parameters.get(FloatKey.lotemperature).floatValue();
