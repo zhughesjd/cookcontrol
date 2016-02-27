@@ -3,8 +3,8 @@ package net.joshuahughes.smokercontroller.controller;
 import java.io.PrintStream;
 import java.util.Map.Entry;
 
-import net.joshuahughes.smokercontroller.Parameters;
-import net.joshuahughes.smokercontroller.Parameters.Thermometer;
+import net.joshuahughes.smokercontroller.enumproperties.Parameters;
+import net.joshuahughes.smokercontroller.enumproperties.Thermometer;
 
 public class PrintStreamController implements Controller {
 	protected PrintStream printStream;

@@ -34,25 +34,25 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.WindowConstants;
 
-import net.joshuahughes.smokercontroller.Parameters;
-import net.joshuahughes.smokercontroller.Parameters.FloatKey;
-import net.joshuahughes.smokercontroller.Parameters.IntKey;
-import net.joshuahughes.smokercontroller.Parameters.Key;
-import net.joshuahughes.smokercontroller.Parameters.LongKey;
-import net.joshuahughes.smokercontroller.Parameters.Thermometer;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 
+import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.FloatKey;
+import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.IntKey;
+import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.Key;
+import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.LongKey;
+import net.joshuahughes.smokercontroller.enumproperties.Parameters;
+import net.joshuahughes.smokercontroller.enumproperties.Thermometer;
+
 public class SwingController extends PrintStreamController {
 	public static float maxValidTemperature = 900;
 	public static String sensorSeriesId = "Sensor";
 	public static String seriesKey = "SeriesKey";
 	static ByteArrayOutputStream baos = new ByteArrayOutputStream(3000);
-	Key<?>[] controllableKeys = new Key<?>[]{LongKey.sleep,FloatKey.lotemperature,FloatKey.temperaturerange,IntKey.fantemperatureindex};
+	Key<?>[] controllableKeys = new Key<?>[]{LongKey.sleep,FloatKey.mintemperature,FloatKey.maxtemperature,IntKey.fantemperatureindex};
 	LinkedHashMap<Key<?>,SpinnerNumberModel> modelMap = new LinkedHashMap<>();
 	JPanel controlPanel = new JPanel(new GridBagLayout());
 	JTextArea textArea = new JTextArea();
@@ -135,7 +135,7 @@ public class SwingController extends PrintStreamController {
 		{
 			box = new JCheckBoxButton(new TimeSeries(feature));
 			boxPanel.add(box);
-			boxPanel.revalidate();	
+			boxPanel.validate();
 		}
 		return (TimeSeries)box.getClientProperty(sensorSeriesId);
 	}
@@ -205,11 +205,11 @@ public class SwingController extends PrintStreamController {
 					thermometer.setId(idField.getText());
 					idField.setText(thermometer.getId());
 					boxPanel.revalidate();
+					boxPanel.repaint();
 				}
 				
 				@Override
 				public void focusGained(FocusEvent e) {
-					// TODO Auto-generated method stub
 					
 				}
 			});

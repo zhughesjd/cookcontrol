@@ -1,10 +1,13 @@
 package net.joshuahughes.smokercontroller;
 
-import net.joshuahughes.smokercontroller.Parameters.FloatKey;
-import net.joshuahughes.smokercontroller.Parameters.IntKey;
-import net.joshuahughes.smokercontroller.Parameters.LongKey;
+import com.pi4j.wiringpi.Spi;
+
 import net.joshuahughes.smokercontroller.controller.Controller;
 import net.joshuahughes.smokercontroller.controller.SwingController;
+import net.joshuahughes.smokercontroller.enumproperties.Parameters;
+import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.FloatKey;
+import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.IntKey;
+import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.LongKey;
 import net.joshuahughes.smokercontroller.fan.Fan;
 import net.joshuahughes.smokercontroller.fan.PWMFan;
 import net.joshuahughes.smokercontroller.fan.SimulatedFan;
@@ -13,8 +16,6 @@ import net.joshuahughes.smokercontroller.function.Linear;
 import net.joshuahughes.smokercontroller.thermometer.MAX31855x8;
 import net.joshuahughes.smokercontroller.thermometer.SimulatedThermometer;
 import net.joshuahughes.smokercontroller.thermometer.TemperatureCollection;
-
-import com.pi4j.wiringpi.Spi;
 
 public class Application {
 	public static Function[] allFunctions = new Function[]{new Linear()};
@@ -34,8 +35,8 @@ public class Application {
 			Float fanTemperature =  parameters.getLatestTemperature(parameters.get(IntKey.fantemperatureindex));
 			if(fanTemperature!=null)
 			{
-				float min = parameters.get(FloatKey.lotemperature).floatValue();
-				float max = min + parameters.get(FloatKey.temperaturerange).floatValue();
+				float min = parameters.get(FloatKey.mintemperature).floatValue();
+				float max = parameters.get(FloatKey.maxtemperature).floatValue();
 				float fanSpeed = parameters.function.normalize(min, max, fanTemperature);
 				fanSpeed = Math.max(0,Math.min(1, fanSpeed));
 				parameters.put(FloatKey.fanrpm, fan.getRPM(fanSpeed));

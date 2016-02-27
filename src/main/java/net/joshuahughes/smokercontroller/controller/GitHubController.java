@@ -10,7 +10,7 @@ import java.util.Collections;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
-import net.joshuahughes.smokercontroller.Parameters;
+import net.joshuahughes.smokercontroller.enumproperties.Parameters;
 
 public class GitHubController implements Controller{
 	public static String macAddress = getMACAddress();
