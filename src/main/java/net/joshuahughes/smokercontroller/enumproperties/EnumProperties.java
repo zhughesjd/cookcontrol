@@ -2,6 +2,7 @@ package net.joshuahughes.smokercontroller.enumproperties;
 
 
 import java.util.AbstractMap;
+import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -13,10 +14,18 @@ public class EnumProperties extends Properties
 	public static enum LongKey implements Key<Long>{utctime,sleep}
 	public static enum FloatKey implements Key<Float>{sensortemperature,mintemperature,fanrpm,maxtemperature}
 	public static enum IntKey implements Key<Integer>{fantemperatureindex,probeindex}
-	public static enum StringKey implements Key<String>{id}
-	public static enum BooleanKey implements Key<Boolean>{sound}
+	public static enum StringKey implements Key<String>{label, email, color}
+	public static enum BooleanKey implements Key<Boolean>{light,vibrate,sound}
 	public <T> T get(Key<T> key){return (T) super.get(key);}
 	public <T> T put(Key<T> key,T value){return (T) super.put(key,value);}
+	public <T> LinkedHashMap<Key<T>,T> getSubMap(Class<T> clazz)
+	{
+		LinkedHashMap<Key<T>,T> map = new LinkedHashMap<>();
+		for(Entry<Object, Object> entry : this.entrySet())
+			if(clazz.equals(entry.getKey().getClass().getGenericInterfaces()[0]))
+				map.put((Key<T>)entry.getKey(), (T)entry.getValue());
+		return map;
+	}
 	public Object put(Object key,Object value)
 	{
 		Entry<Key<Object>, Object> entry = getKeyValue(key.toString(),value.toString());

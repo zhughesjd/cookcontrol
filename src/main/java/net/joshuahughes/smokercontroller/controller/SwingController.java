@@ -1,11 +1,17 @@
 package net.joshuahughes.smokercontroller.controller;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -23,6 +29,7 @@ import java.util.TimeZone;
 
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -32,6 +39,7 @@ import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import org.jfree.chart.ChartFactory;
@@ -44,6 +52,7 @@ import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.FloatKey;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.IntKey;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.Key;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.LongKey;
+import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.StringKey;
 import net.joshuahughes.smokercontroller.enumproperties.Parameters;
 import net.joshuahughes.smokercontroller.enumproperties.Thermometer;
 
@@ -122,9 +131,6 @@ public class SwingController extends PrintStreamController {
 				if(temp<maxValidTemperature)
 					getTimeSeries(entry.getKey()).add(second, temp, true);
 			}
-		Float temp = parameters.get(FloatKey.sensortemperature);
-		if(temp !=null && temp < maxValidTemperature)
-			getTimeSeries(parameters.sensorFeature).add(second, temp, true);
 	}
 	private TimeSeries getTimeSeries(Thermometer feature) {
 		JCheckBoxButton box = null;
@@ -146,8 +152,8 @@ public class SwingController extends PrintStreamController {
 		JLabel label = new JLabel(){
 			private static final long serialVersionUID = 1L;
 			public String getText(){
-				if(ts == null) return "";
-				return ts.getKey().toString();
+				invalidate();
+				return ts == null ?"":ts.getKey().toString();
 			}
 		};
 		JCheckBox box = new JCheckBox("",true);
@@ -173,7 +179,8 @@ public class SwingController extends PrintStreamController {
 			label.addMouseListener(new MouseAdapter(){
 				public void mouseClicked(MouseEvent e)
 				{
-					ProbeEditorDialog dlg = new ProbeEditorDialog(ts);
+					JDialog dlg = new JDialog();
+					dlg.setContentPane(new EditorPanel(ts));
 					dlg.setVisible(true);
 					dlg.setSize(300,300);
 				}
@@ -184,37 +191,92 @@ public class SwingController extends PrintStreamController {
 			return ts.getKey().toString();
 		}
 	}
-	public class ProbeEditorDialog extends JDialog
+	public class EditorPanel extends JPanel
 	{
-		public JTextField idField = new JTextField();
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 		
-		public ProbeEditorDialog(TimeSeries ts)
+		public EditorPanel(TimeSeries ts)
 		{
-			idField.setText(ts.getKey().toString());
-			Container container = this.getContentPane();
-			container.setLayout(new GridLayout(2,2));
-			container.add(new JLabel("id:"));
-			container.add(idField);
-			container.add(new JTextArea());
-			idField.addFocusListener(new FocusListener() {
-				
-				@Override
-				public void focusLost(FocusEvent e)
+			Thermometer thermometer = (Thermometer) ts.getKey();
+			setLayout(new GridBagLayout());
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridx=gbc.gridy=0;
+			gbc.weightx=gbc.weighty=1;
+			for(Entry<Object, Object> entry : thermometer.entrySet())
+				if(entry.getKey() instanceof Key)
 				{
-					Thermometer thermometer = (Thermometer) ts.getKey();
-					thermometer.setId(idField.getText());
-					idField.setText(thermometer.getId());
-					boxPanel.revalidate();
-					boxPanel.repaint();
+					JComponent cmp = null;
+					Key<?> key = (Key<?>) entry.getKey();
+					Object value = entry.getValue();
+					if(value instanceof Integer)
+					{
+						JPanel panel = new JPanel(new BorderLayout());
+						cmp = panel;
+						panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
+						SpinnerNumberModel model = new SpinnerNumberModel((int)value, 0, 2000, 1);
+						panel.add(new JSpinner(model ),BorderLayout.CENTER);
+					}
+					if(value instanceof String)
+					{
+						JPanel panel = new JPanel(new BorderLayout());
+						cmp = panel;
+						panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
+						JTextField field = new JTextField(key.toString());
+						panel.add(field,BorderLayout.CENTER);
+						field.setPreferredSize(new Dimension(100, 24));
+						field.setText(value.toString());
+						if(key.toString().equals(StringKey.label.toString()))
+							field.addFocusListener(new FocusListener() {
+								
+								@Override
+								public void focusLost(FocusEvent e)
+								{
+									thermometer.setLabel(field.getText());
+									field.setText(thermometer.get(StringKey.label));
+									SwingUtilities.getWindowAncestor(boxPanel).validate();
+								}
+								
+								@Override
+								public void focusGained(FocusEvent e) {
+									
+								}
+							});
+					}
+					if(cmp!=null)
+					{
+						add(cmp,gbc);
+						gbc.gridy++;
+					}
 				}
-				
-				@Override
-				public void focusGained(FocusEvent e) {
-					
-				}
-			});
 		}
-		private static final long serialVersionUID = -5717230415060288563L;
-		
+	}
+	public class HintTextField extends JTextField {
+	    /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		public HintTextField(String hint) {
+	        _hint = hint;
+	    }
+	    @Override
+	    public void paint(Graphics g) {
+	        super.paint(g);
+	        if (getText().length() == 0) {
+	            int h = getHeight();
+	            ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+	            Insets ins = getInsets();
+	            FontMetrics fm = g.getFontMetrics();
+	            int c0 = getBackground().getRGB();
+	            int c1 = getForeground().getRGB();
+	            int m = 0xfefefefe;
+	            int c2 = ((c0 & m) >>> 1) + ((c1 & m) >>> 1);
+	            g.setColor(new Color(c2, true));
+	            g.drawString(_hint, ins.left, h / 2 + fm.getAscent() / 2 - 2);
+	        }
+	    }
+	    private final String _hint;
 	}
 }

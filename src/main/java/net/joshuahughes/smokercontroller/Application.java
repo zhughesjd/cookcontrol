@@ -4,10 +4,10 @@ import com.pi4j.wiringpi.Spi;
 
 import net.joshuahughes.smokercontroller.controller.Controller;
 import net.joshuahughes.smokercontroller.controller.SwingController;
-import net.joshuahughes.smokercontroller.enumproperties.Parameters;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.FloatKey;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.IntKey;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.LongKey;
+import net.joshuahughes.smokercontroller.enumproperties.Parameters;
 import net.joshuahughes.smokercontroller.fan.Fan;
 import net.joshuahughes.smokercontroller.fan.PWMFan;
 import net.joshuahughes.smokercontroller.fan.SimulatedFan;

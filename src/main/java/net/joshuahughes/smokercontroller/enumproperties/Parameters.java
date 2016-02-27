@@ -10,12 +10,8 @@ import net.joshuahughes.smokercontroller.function.Linear;
 
 public class Parameters extends EnumProperties
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 7735972862461344117L;
 	public Function function = new Linear();
-	public Thermometer sensorFeature;
 	private TreeSet<Thermometer> thermometerSet = new TreeSet<>();
 	private LinkedHashMap<Thermometer,Float> temperatureMap = new LinkedHashMap<>();
 	public Parameters()

@@ -1,52 +1,50 @@
 package net.joshuahughes.smokercontroller.enumproperties;
 
+import java.awt.Color;
 import java.util.LinkedHashSet;
+import java.util.Random;
 import java.util.TreeSet;
 
 
 public class Thermometer extends EnumProperties implements Comparable<Thermometer>{
 	private static final long serialVersionUID = 2781070028094088016L;
 	public LinkedHashSet<TemperatureAlert> alertList = new LinkedHashSet<TemperatureAlert>();
-	private String id;
-	private int index;
 	private TreeSet<Thermometer> set;
 	public Thermometer(int index, TreeSet<Thermometer> thermometerSet)
 	{
-		this.set = thermometerSet;
-		id = index<0?"sensor":"probe "+index;
-		this.index = Math.max(index, -1);
+		Random random = new Random(34234928374l);
+		set = thermometerSet;
+		put(StringKey.color,"0x"+Integer.toHexString(new Color(random.nextInt(256),random.nextInt(256),random.nextInt(256)).getRGB()).substring(2));
+		put(StringKey.label,index<0?"sensor":"probe "+index);
+		put(IntKey.probeindex,Math.max(index, -1));
 	}
 	public int getIndex()
 	{
-		return index;
+		return get(IntKey.probeindex);
 	}
-	public String getId()
-	{
-		return id;
-	}
-	public boolean setId(String id)
+	public boolean setLabel(String label)
 	{
 		for(Thermometer thermometer : set)
-			if(thermometer.getId().equals(id))
+			if(thermometer.get(StringKey.label).equals(label))
 				return false;
-		this.id = id;
+		put(StringKey.label,label);
 		return true;
 	}
 	@Override
 	public int compareTo(Thermometer o) {
-		return Integer.compare(index, o.index);
+		return Integer.compare(get(IntKey.probeindex), o.get(IntKey.probeindex));
 	}
 	public String toString()
 	{
-		return id;
+		return get(StringKey.label);
 	}
 	public int hashCode()
 	{
-		return index;
+		return this.get(IntKey.probeindex);
 	}
 	public boolean equals(Object object)
 	{
 		if(!(object instanceof Thermometer)) return false;
-		return id == ((Thermometer)object).id;
+		return get(StringKey.label).equals(((Thermometer)object).get(StringKey.label));
 	}
 }
