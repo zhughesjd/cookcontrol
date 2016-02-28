@@ -9,7 +9,7 @@ import java.util.TreeSet;
 public class Thermometer extends EnumProperties implements Comparable<Thermometer>{
 	public static Random random = new Random(34234928374l);
 	private static final long serialVersionUID = 2781070028094088016L;
-	public LinkedHashSet<TemperatureAlert> alertList = new LinkedHashSet<TemperatureAlert>();
+	public LinkedHashSet<TemperatureAlert> alertSet = new LinkedHashSet<TemperatureAlert>();
 	private TreeSet<Thermometer> set;
 	public Thermometer(int index, TreeSet<Thermometer> thermometerSet)
 	{

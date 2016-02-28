@@ -10,10 +10,15 @@ public class TemperatureAlert extends EnumProperties
 	public TemperatureAlert()
 	{
 		put(StringKey.label,"alarm "+idIncr++);
-		put(StringKey.email,null);
+		put(StringKey.email,"");
 		put(FloatKey.maxtemperature,500);
 		put(BooleanKey.light, true);
 		put(BooleanKey.sound, true);
 		put(BooleanKey.vibrate, true);
 	}
+	public String toString()
+	{
+		return get(StringKey.label);
+	}
+	
 }

@@ -56,12 +56,14 @@ import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 
+import net.joshuahughes.smokercontroller.enumproperties.EnumProperties;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.FloatKey;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.IntKey;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.Key;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.LongKey;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.StringKey;
 import net.joshuahughes.smokercontroller.enumproperties.Parameters;
+import net.joshuahughes.smokercontroller.enumproperties.TemperatureAlert;
 import net.joshuahughes.smokercontroller.enumproperties.Thermometer;
 
 public class SwingController extends PrintStreamController {
@@ -229,9 +231,10 @@ public class SwingController extends PrintStreamController {
 
 		public EditorPanel(JCheckBoxButton button)
 		{
+			super(new BorderLayout());
+			JPanel westWestPanel = new JPanel(new GridBagLayout());
 			TimeSeries ts = button.ts;
 			Thermometer thermometer = (Thermometer) ts.getKey();
-			setLayout(new GridBagLayout());
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx=gbc.gridy=0;
 			gbc.weightx=gbc.weighty=1;
@@ -240,7 +243,7 @@ public class SwingController extends PrintStreamController {
 				if(entry.getKey() instanceof Key)
 				{
 					if(entry.getKey().toString().equals(IntKey.probeindex.toString())) continue;
-					JComponent cmp = null;
+					JComponent cmp = SwingController.getComponent(thermometer, (Key<?>) entry.getKey(), entry.getValue());
 					Key<?> key = (Key<?>) entry.getKey();
 					Object value = entry.getValue();
 					if(value instanceof Integer)
@@ -310,11 +313,86 @@ public class SwingController extends PrintStreamController {
 					}
 					if(cmp!=null)
 					{
+						westWestPanel.add(cmp,gbc);
+						gbc.gridy++;
+					}
+				}
+			}
+			AlertPanel alertPanel = new AlertPanel();
+			DefaultListModel<TemperatureAlert> model = new DefaultListModel<>();
+			JList<TemperatureAlert> list = new JList<>(model);
+			list.addListSelectionListener(new ListSelectionListener() {
+				@Override
+				public void valueChanged(ListSelectionEvent e) {
+					if(list.getSelectedValue()!=null)
+						alertPanel.setAlert(list.getSelectedValue());
+				}
+			});
+			westWestPanel.add(new JButton(new AbstractAction("comments"){
+				private static final long serialVersionUID = -5989081975520668735L;
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					comment(thermometer.timeCommentMap);
+				}}),gbc);
+			gbc.gridy++;
+			westWestPanel.add(new JButton(new AbstractAction("add alert..."){
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					TemperatureAlert alert = new TemperatureAlert();
+					thermometer.alertSet.add(alert);
+					model.clear();
+					for(TemperatureAlert element : thermometer.alertSet)
+						model.addElement(element);
+				}}),gbc);
+			gbc.gridy++;
+			westWestPanel.add(new JButton(new AbstractAction("delete alert..."){
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if(list.getSelectedIndex()<0)return;
+					thermometer.alertSet.remove(model.getElementAt(list.getSelectedIndex()));
+					model.clear();
+					for(TemperatureAlert alert : thermometer.alertSet)
+						model.addElement(alert);
+				}}),gbc);
+			for(TemperatureAlert alert : thermometer.alertSet)
+				model.addElement(alert);
+			JPanel westPanel = new JPanel(new BorderLayout());
+			westPanel.add(westWestPanel,BorderLayout.WEST);
+			westPanel.add(new JScrollPane(list),BorderLayout.CENTER);
+			add(westPanel,BorderLayout.WEST);
+			add(alertPanel,BorderLayout.CENTER);
+		}
+	}
+	public class AlertPanel extends JPanel
+	{
+		private static final long serialVersionUID = 1L;
+		private TemperatureAlert alert;
+		public AlertPanel()
+		{
+			super(new GridBagLayout());
+		}
+		public void setAlert(TemperatureAlert alert)
+		{
+			this.alert = alert;
+			this.removeAll();
+			for(Entry<Object, Object> entry : alert.entrySet())
+			{
+				if(entry.getKey() instanceof Key)
+				{
+					if(entry.getKey().toString().equals(IntKey.probeindex.toString())) continue;
+					JComponent cmp = SwingController.getComponent(alert, (Key<?>) entry.getKey(), entry.getValue());
+					if(cmp!=null)
+					{
 						add(cmp,gbc);
 						gbc.gridy++;
 					}
 				}
 			}
+			SwingUtilities.getRoot(this).validate();
 		}
 	}
 	public class HintTextArea extends JTextArea {
@@ -460,6 +538,52 @@ public class SwingController extends PrintStreamController {
 					return super.toString().substring(11,19);
 				}
 			});
+	}
+	private static JComponent getComponent(EnumProperties props,Key<?> key,Object value)
+	{
+		JComponent cmp = null;
+		if(value instanceof Integer)
+		{
+			JPanel panel = new JPanel(new BorderLayout());
+			cmp = panel;
+			panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
+			SpinnerNumberModel model = new SpinnerNumberModel((int)value,0, 2000, 1);
+			panel.add(new JSpinner(model ),BorderLayout.CENTER);
+		}
+		else if(key.toString().equals(StringKey.label.toString()))
+		{
+			JPanel panel = new JPanel(new BorderLayout());
+			cmp = panel;
+			panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
+			JComboBox<String> box = new JComboBox<String>(new String[]{"hello","world"});
+			box.setEditable(true);
+			box.setSelectedItem(value.toString());
+			panel.add(box,BorderLayout.CENTER);
+			box.setPreferredSize(new Dimension(100, 24));
+			box.getEditor().getEditorComponent().addFocusListener(new FocusListener() {
+				@Override
+				public void focusLost(FocusEvent e)
+				{
+					props.put(StringKey.label, box.getSelectedItem().toString());
+					box.setSelectedItem(props.get(StringKey.label));
+				}
+
+				@Override
+				public void focusGained(FocusEvent e) {
+				}
+			});
+		}
+		else if(value instanceof String)
+		{
+			JPanel panel = new JPanel(new BorderLayout());
+			cmp = panel;
+			panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
+			JTextField field = new JTextField(key.toString());
+			panel.add(field,BorderLayout.CENTER);
+			field.setPreferredSize(new Dimension(100, 24));
+			field.setText(value.toString());
+		}
+		return cmp;
 	}
 }
 
