@@ -228,9 +228,9 @@ public class SwingController extends PrintStreamController {
 		 */
 		private static final long serialVersionUID = 1L;
 
-		public EditorPanel(JCheckBoxButton jCheckBoxButton)
+		public EditorPanel(JCheckBoxButton button)
 		{
-			TimeSeries ts = jCheckBoxButton.ts;
+			TimeSeries ts = button.ts;
 			Thermometer thermometer = (Thermometer) ts.getKey();
 			setLayout(new GridBagLayout());
 			GridBagConstraints gbc = new GridBagConstraints();
@@ -269,8 +269,8 @@ public class SwingController extends PrintStreamController {
 								colorButton.setForeground(Thermometer.getBW(colorButton.getBackground()));
 								int seriesIndex = dataset.getSeriesIndex(ts.getKey());
 								chartPanel.getChart().getXYPlot().getRenderer().setSeriesPaint(seriesIndex, color);
-								jCheckBoxButton.revalidate();
-								jCheckBoxButton.repaint();
+								button.revalidate();
+								button.repaint();
 							}
 						});
 					}
@@ -344,15 +344,17 @@ public class SwingController extends PrintStreamController {
 		}
 		private final String _hint;
 	}
-	public void comment(LinkedHashMap<Long,String> commentMap)
+	public static void comment(LinkedHashMap<Long,String> commentMap)
 	{
+		int height = 300;
+		int areaWidth = 300;
 		JTextArea area = new JTextArea();
-		JPanel panel =new JPanel(new GridBagLayout());
-		DefaultListModel<String> model = new DefaultListModel<>();
-		for(Entry<Long, String> entry : commentMap.entrySet())
-			model.addElement(entry.getValue().substring(0, Math.min(10, entry.getValue().length())));
-		JList<String> list = new JList<String>(model);
-		
+		area.setPreferredSize(new Dimension(areaWidth,height));
+		DefaultListModel<Date> model = new DefaultListModel<>();
+		fill(model,commentMap);
+		JList<Date> list = new JList<>(model);
+		int listWidth = 150;
+		list.setPreferredSize(new Dimension(listWidth,height));
 		area.setEnabled(false);
 		area.addKeyListener(new KeyAdapter() {
 			
@@ -368,8 +370,6 @@ public class SwingController extends PrintStreamController {
 					}
 				index--;
 				commentMap.put(key, area.getText());
-				if(index<0 || model.getSize() <=0 )return;
-				model.setElementAt(area.getText().substring(0, Math.min(10, area.getText().length())),index);
 			}
 		});
 		
@@ -398,10 +398,8 @@ public class SwingController extends PrintStreamController {
 			public void actionPerformed(ActionEvent e) {
 				String comment = "comment:";
 				commentMap.put(System.currentTimeMillis(), comment);
-				model.clear();
-				for(Entry<Long, String> entry : commentMap.entrySet())
-					model.addElement(entry.getValue().substring(0, Math.min(10, entry.getValue().length())));
-				area.setText(comment);
+				fill(model,commentMap);
+				list.setSelectedIndex(model.size()-1);
 			}});
 		JButton delete = new JButton(new AbstractAction("delete"){
 			private static final long serialVersionUID = -6488437817173769878L;
@@ -415,18 +413,25 @@ public class SwingController extends PrintStreamController {
 						key = entry.getKey();
 						break;
 					}
-				System.out.println(commentMap.remove(key));
-				model.clear();
-				for(Entry<Long, String> entry : commentMap.entrySet())
-					model.addElement(entry.getValue().substring(0, Math.min(10, entry.getValue().length())));
-				area.setText("");
+				commentMap.remove(key);
+				fill(model,commentMap);
+				if(model.getSize()<=0)
+					area.setText("");
+				else
+					list.setSelectedIndex(model.size()-1);
 			}});
 		
+		JPanel panel =new JPanel(new GridBagLayout());
+		panel.setPreferredSize(new Dimension(listWidth+10, height));
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx=gbc.gridy=0;
-		gbc.weightx=gbc.weighty=1;
+		gbc.weightx=1;
+		gbc.weighty=.9;
 		gbc.gridwidth=2;
+		gbc.fill = GridBagConstraints.BOTH;
 		panel.add(new JScrollPane(list),gbc);
+		gbc.weighty=.1;
+		gbc.fill = GridBagConstraints.NONE;
 		gbc.gridwidth=1;
 		gbc.gridy++;
 		panel.add(add,gbc);
@@ -438,8 +443,19 @@ public class SwingController extends PrintStreamController {
 		JDialog dlg = new JDialog();
 		dlg.setTitle("Comment Editor");
 		dlg.setContentPane(commentPanel);
-		dlg.setSize(500,500);
+		dlg.setSize((int) (area.getPreferredSize().getWidth()+panel.getPreferredSize().getWidth()),height);
+		dlg.pack();
 		dlg.setVisible(true);
+	}
+	private static void fill(DefaultListModel<Date> model, LinkedHashMap<Long, String> commentMap) {
+		model.clear();
+		for(Entry<Long, String> entry : commentMap.entrySet())
+			model.addElement(new Date(entry.getKey()){
+				private static final long serialVersionUID = 5676390436652624926L;
+				public String toString(){
+					return super.toString().substring(11,19);
+				}
+			});
 	}
 }
 
