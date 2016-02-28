@@ -318,12 +318,12 @@ public class SwingController extends PrintStreamController {
 			}
 		}
 	}
-	public class HintTextField extends JTextField {
+	public class HintTextArea extends JTextArea {
 		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
-		public HintTextField(String hint) {
+		public HintTextArea(String hint) {
 			_hint = hint;
 		}
 		@Override
@@ -353,6 +353,7 @@ public class SwingController extends PrintStreamController {
 			model.addElement(entry.getValue().substring(0, Math.min(10, entry.getValue().length())));
 		JList<String> list = new JList<String>(model);
 		
+		area.setEnabled(false);
 		area.addKeyListener(new KeyAdapter() {
 			
 			@Override
@@ -375,6 +376,12 @@ public class SwingController extends PrintStreamController {
 		list.addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
+				if(list.getSelectedIndex()<0)
+				{
+					area.setEnabled(false);
+					return;
+				}
+				area.setEnabled(true);
 				int index=0;
 				for(Entry<Long, String> entry : commentMap.entrySet())
 					if(index++ == list.getSelectedIndex())
@@ -382,6 +389,7 @@ public class SwingController extends PrintStreamController {
 						area.setText(entry.getValue());
 						return;
 					}
+				list.setSelectedIndex(model.getSize()-1);
 			}
 		});
 		JButton add = new JButton(new AbstractAction("add"){
