@@ -14,10 +14,9 @@ import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.ByteArrayOutputStream;
@@ -356,26 +355,31 @@ public class SwingController extends PrintStreamController {
 		int listWidth = 150;
 		list.setPreferredSize(new Dimension(listWidth,height));
 		area.setEnabled(false);
-		area.addKeyListener(new KeyAdapter() {
-			
+		area.addFocusListener(new FocusAdapter() {
+			int indexToSet = -1;
 			@Override
-			public void keyTyped(KeyEvent e) {
+			public void focusGained(FocusEvent e) {
+				indexToSet = list.getSelectedIndex();
+			}
+			@Override
+			public void focusLost(FocusEvent e) {
 				int index=0;
 				long key = -1;
 				for(Entry<Long, String> entry : commentMap.entrySet())
-					if(index++ == list.getSelectedIndex())
+					if(index++ == indexToSet)
 					{
 						key = entry.getKey();
 						break;
 					}
 				index--;
 				commentMap.put(key, area.getText());
-			}
+			}			
 		});
 		
 		list.addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
+				if(e.getValueIsAdjusting()) return;
 				if(list.getSelectedIndex()<0)
 				{
 					area.setEnabled(false);
