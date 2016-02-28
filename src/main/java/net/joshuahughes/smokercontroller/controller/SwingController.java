@@ -56,7 +56,6 @@ import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 
-import net.joshuahughes.smokercontroller.enumproperties.EnumProperties;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.FloatKey;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.IntKey;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.Key;
@@ -243,7 +242,7 @@ public class SwingController extends PrintStreamController {
 				if(entry.getKey() instanceof Key)
 				{
 					if(entry.getKey().toString().equals(IntKey.probeindex.toString())) continue;
-					JComponent cmp = SwingController.getComponent(thermometer, (Key<?>) entry.getKey(), entry.getValue());
+					JComponent cmp = null;
 					Key<?> key = (Key<?>) entry.getKey();
 					Object value = entry.getValue();
 					if(value instanceof Integer)
@@ -318,14 +317,19 @@ public class SwingController extends PrintStreamController {
 					}
 				}
 			}
-			AlertPanel alertPanel = new AlertPanel();
+			final JPanel westPanel = new JPanel();
+			JPanel alertPanel = new JPanel();
 			DefaultListModel<TemperatureAlert> model = new DefaultListModel<>();
 			JList<TemperatureAlert> list = new JList<>(model);
 			list.addListSelectionListener(new ListSelectionListener() {
+				private JPanel panel = alertPanel;
 				@Override
 				public void valueChanged(ListSelectionEvent e) {
-					if(list.getSelectedValue()!=null)
-						alertPanel.setAlert(list.getSelectedValue());
+					if(list.getSelectedValue()!=null){
+						EditorPanel.this.remove(panel);
+						EditorPanel.this.add(panel = list.getSelectedValue().getPanel(),BorderLayout.CENTER);
+						EditorPanel.this.validate();
+					}						
 				}
 			});
 			westWestPanel.add(new JButton(new AbstractAction("comments"){
@@ -360,39 +364,10 @@ public class SwingController extends PrintStreamController {
 				}}),gbc);
 			for(TemperatureAlert alert : thermometer.alertSet)
 				model.addElement(alert);
-			JPanel westPanel = new JPanel(new BorderLayout());
 			westPanel.add(westWestPanel,BorderLayout.WEST);
 			westPanel.add(new JScrollPane(list),BorderLayout.CENTER);
 			add(westPanel,BorderLayout.WEST);
 			add(alertPanel,BorderLayout.CENTER);
-		}
-	}
-	public class AlertPanel extends JPanel
-	{
-		private static final long serialVersionUID = 1L;
-		private TemperatureAlert alert;
-		public AlertPanel()
-		{
-			super(new GridBagLayout());
-		}
-		public void setAlert(TemperatureAlert alert)
-		{
-			this.alert = alert;
-			this.removeAll();
-			for(Entry<Object, Object> entry : alert.entrySet())
-			{
-				if(entry.getKey() instanceof Key)
-				{
-					if(entry.getKey().toString().equals(IntKey.probeindex.toString())) continue;
-					JComponent cmp = SwingController.getComponent(alert, (Key<?>) entry.getKey(), entry.getValue());
-					if(cmp!=null)
-					{
-						add(cmp,gbc);
-						gbc.gridy++;
-					}
-				}
-			}
-			SwingUtilities.getRoot(this).validate();
 		}
 	}
 	public class HintTextArea extends JTextArea {
@@ -538,52 +513,6 @@ public class SwingController extends PrintStreamController {
 					return super.toString().substring(11,19);
 				}
 			});
-	}
-	private static JComponent getComponent(EnumProperties props,Key<?> key,Object value)
-	{
-		JComponent cmp = null;
-		if(value instanceof Integer)
-		{
-			JPanel panel = new JPanel(new BorderLayout());
-			cmp = panel;
-			panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
-			SpinnerNumberModel model = new SpinnerNumberModel((int)value,0, 2000, 1);
-			panel.add(new JSpinner(model ),BorderLayout.CENTER);
-		}
-		else if(key.toString().equals(StringKey.label.toString()))
-		{
-			JPanel panel = new JPanel(new BorderLayout());
-			cmp = panel;
-			panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
-			JComboBox<String> box = new JComboBox<String>(new String[]{"hello","world"});
-			box.setEditable(true);
-			box.setSelectedItem(value.toString());
-			panel.add(box,BorderLayout.CENTER);
-			box.setPreferredSize(new Dimension(100, 24));
-			box.getEditor().getEditorComponent().addFocusListener(new FocusListener() {
-				@Override
-				public void focusLost(FocusEvent e)
-				{
-					props.put(StringKey.label, box.getSelectedItem().toString());
-					box.setSelectedItem(props.get(StringKey.label));
-				}
-
-				@Override
-				public void focusGained(FocusEvent e) {
-				}
-			});
-		}
-		else if(value instanceof String)
-		{
-			JPanel panel = new JPanel(new BorderLayout());
-			cmp = panel;
-			panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
-			JTextField field = new JTextField(key.toString());
-			panel.add(field,BorderLayout.CENTER);
-			field.setPreferredSize(new Dimension(100, 24));
-			field.setText(value.toString());
-		}
-		return cmp;
 	}
 }
 
