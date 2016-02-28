@@ -18,21 +18,7 @@ public class EnumProperties extends Properties
 	public static enum BooleanKey implements Key<Boolean>{light,vibrate,sound}
 	public <T> T get(Key<T> key){return (T) super.get(key);}
 	public <T> T put(Key<T> key,T value){return (T) super.put(key,value);}
-	public <T> LinkedHashMap<Key<T>,T> getSubMap(Class<T> clazz)
-	{
-		LinkedHashMap<Key<T>,T> map = new LinkedHashMap<>();
-		for(Entry<Object, Object> entry : this.entrySet())
-			if(clazz.equals(entry.getKey().getClass().getGenericInterfaces()[0]))
-				map.put((Key<T>)entry.getKey(), (T)entry.getValue());
-		return map;
-	}
-	public Object put(Object key,Object value)
-	{
-		Entry<Key<Object>, Object> entry = getKeyValue(key.toString(),value.toString());
-		Key<Object> enumKey = entry.getKey();
-		Object enumValue = entry.getValue();
-		return super.put(enumKey==null?key:enumKey, enumValue==null?value:enumValue);
-	}
+	public LinkedHashMap<Long,String> timeCommentMap = new LinkedHashMap<>();
 	public Object get( Object key)
 	{
 		Key<?> enumKey = getKeyValue(key.toString(),null).getKey();

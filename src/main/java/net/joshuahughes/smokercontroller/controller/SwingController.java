@@ -16,6 +16,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.ByteArrayOutputStream;
@@ -27,12 +29,17 @@ import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 
-import javax.swing.BoxLayout;
+import javax.swing.AbstractAction;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -41,6 +48,8 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -66,10 +75,11 @@ public class SwingController extends PrintStreamController {
 	JPanel controlPanel = new JPanel(new GridBagLayout());
 	JTextArea textArea = new JTextArea();
 	TimeSeriesCollection dataset = new TimeSeriesCollection();
-	JPanel boxPanel = new JPanel();
+	JPanel boxPanel = new JPanel(new GridBagLayout());
+	GridBagConstraints gbc = new GridBagConstraints();
+	ChartPanel chartPanel = new ChartPanel(ChartFactory.createTimeSeriesChart("All Probes", "Time","Temperature",dataset,true,true,false));
 	public SwingController(Parameters parameters) {
 		super(new PrintStream(baos));
-		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.weightx = gbc.weighty = 1;
 		gbc.gridx = gbc.gridy = 0;
 		for(Key<?> key : controllableKeys)
@@ -85,20 +95,30 @@ public class SwingController extends PrintStreamController {
 			controlPanel.add(new JSpinner(model),gbc);
 			gbc.gridy++;
 		}
+		gbc.gridwidth = 2;
+		gbc.gridx = 0;
+		controlPanel.add(new JButton(new AbstractAction("comments"){
+			private static final long serialVersionUID = -5989081975520668735L;
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				comment(parameters.timeCommentMap);
+				
+			}}),gbc);
 		JFrame frame = new JFrame();
+		frame.setTitle("Smoker Controller");
 		Container content = frame.getContentPane();
 		content.setLayout(new BorderLayout());
 		content.add(new JScrollPane(controlPanel), BorderLayout.WEST);
-		ChartPanel chartPanel = new ChartPanel(ChartFactory.createTimeSeriesChart("All Probes", "Time","Temperature",dataset,true,true,false));
 		JPanel centerPanel = new JPanel(new BorderLayout());
 		centerPanel.add(chartPanel, BorderLayout.CENTER);
-		boxPanel.setLayout(new BoxLayout(boxPanel,BoxLayout.Y_AXIS));
 		centerPanel.add(boxPanel, BorderLayout.WEST);
 		content.add(centerPanel, BorderLayout.CENTER);
 		content.add(new JScrollPane(textArea), BorderLayout.EAST);
 		frame.setSize(1000, 500);
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		gbc.gridx=gbc.gridy=0;
+		gbc.weightx=gbc.weighty=1;
 	}
 	@Override
 	public void process(Parameters parameters) {
@@ -140,7 +160,8 @@ public class SwingController extends PrintStreamController {
 		if(box == null)
 		{
 			box = new JCheckBoxButton(new TimeSeries(feature));
-			boxPanel.add(box);
+			boxPanel.add(box,gbc);
+			gbc.gridy++;
 			boxPanel.validate();
 		}
 		return (TimeSeries)box.getClientProperty(sensorSeriesId);
@@ -150,16 +171,25 @@ public class SwingController extends PrintStreamController {
 		private static final long serialVersionUID = 1L;
 		TimeSeries ts;
 		JLabel label = new JLabel(){
+			{this.setOpaque(true);}
 			private static final long serialVersionUID = 1L;
 			public String getText(){
-				invalidate();
-				return ts == null ?"":ts.getKey().toString();
+				return ts == null ?super.getText():ts.getKey().toString();
+			}
+			public Color getBackground(){
+				if(thermometer == null) return super.getBackground();
+				return Color.decode(thermometer.get(StringKey.color));
+			}
+			public Color getForeground(){
+				return Thermometer.getBW(getBackground());
 			}
 		};
 		JCheckBox box = new JCheckBox("",true);
+		private Thermometer thermometer;
 		public JCheckBoxButton(TimeSeries ts)
 		{
 			super(new BorderLayout());
+			this.thermometer = (Thermometer)ts.getKey();
 			putClientProperty(sensorSeriesId, ts);
 			this.ts = ts;
 			add(box,BorderLayout.WEST);
@@ -180,7 +210,7 @@ public class SwingController extends PrintStreamController {
 				public void mouseClicked(MouseEvent e)
 				{
 					JDialog dlg = new JDialog();
-					dlg.setContentPane(new EditorPanel(ts));
+					dlg.setContentPane(new EditorPanel(JCheckBoxButton.this));
 					dlg.setVisible(true);
 					dlg.setSize(300,300);
 				}
@@ -197,17 +227,20 @@ public class SwingController extends PrintStreamController {
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
-		
-		public EditorPanel(TimeSeries ts)
+
+		public EditorPanel(JCheckBoxButton jCheckBoxButton)
 		{
+			TimeSeries ts = jCheckBoxButton.ts;
 			Thermometer thermometer = (Thermometer) ts.getKey();
 			setLayout(new GridBagLayout());
 			GridBagConstraints gbc = new GridBagConstraints();
 			gbc.gridx=gbc.gridy=0;
 			gbc.weightx=gbc.weighty=1;
 			for(Entry<Object, Object> entry : thermometer.entrySet())
+			{
 				if(entry.getKey() instanceof Key)
 				{
+					if(entry.getKey().toString().equals(IntKey.probeindex.toString())) continue;
 					JComponent cmp = null;
 					Key<?> key = (Key<?>) entry.getKey();
 					Object value = entry.getValue();
@@ -216,10 +249,57 @@ public class SwingController extends PrintStreamController {
 						JPanel panel = new JPanel(new BorderLayout());
 						cmp = panel;
 						panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
-						SpinnerNumberModel model = new SpinnerNumberModel((int)value, 0, 2000, 1);
+						SpinnerNumberModel model = new SpinnerNumberModel((int)value,0, 2000, 1);
 						panel.add(new JSpinner(model ),BorderLayout.CENTER);
 					}
-					if(value instanceof String)
+					else if(key.toString().equals(StringKey.color.toString()))
+					{
+						JButton colorButton = new JButton("line color");
+						cmp = colorButton;
+						colorButton.setBackground(Thermometer.getColor(value.toString()));
+						colorButton.setForeground(Thermometer.getBW(colorButton.getBackground()));
+						colorButton.addActionListener(new ActionListener() {
+							
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								Color color = JColorChooser.showDialog(null, "choose line color", colorButton.getBackground());
+								if(color == null) return;
+								thermometer.put(StringKey.color, Thermometer.getString(color));
+								colorButton.setBackground(color);
+								colorButton.setForeground(Thermometer.getBW(colorButton.getBackground()));
+								int seriesIndex = dataset.getSeriesIndex(ts.getKey());
+								chartPanel.getChart().getXYPlot().getRenderer().setSeriesPaint(seriesIndex, color);
+								jCheckBoxButton.revalidate();
+								jCheckBoxButton.repaint();
+							}
+						});
+					}
+					else if(key.toString().equals(StringKey.label.toString()))
+					{
+						JPanel panel = new JPanel(new BorderLayout());
+						cmp = panel;
+						panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
+						JComboBox<String> box = new JComboBox<String>(new String[]{"probe "+thermometer.getIndex(),"ambient "+thermometer.getIndex(),"beef "+thermometer.getIndex(),"chicken "+thermometer.getIndex(),"pork "+thermometer.getIndex()});
+						box.setEditable(true);
+						box.setSelectedItem(value.toString());
+						panel.add(box,BorderLayout.CENTER);
+						box.setPreferredSize(new Dimension(100, 24));
+						box.getEditor().getEditorComponent().addFocusListener(new FocusListener() {
+							@Override
+							public void focusLost(FocusEvent e)
+							{
+								thermometer.setLabel(box.getSelectedItem().toString());
+								box.setSelectedItem(thermometer.get(StringKey.label));
+								SwingUtilities.getWindowAncestor(boxPanel).validate();
+								SwingUtilities.getWindowAncestor(boxPanel).repaint();
+							}
+
+							@Override
+							public void focusGained(FocusEvent e) {
+							}
+						});
+					}
+					else if(value instanceof String)
 					{
 						JPanel panel = new JPanel(new BorderLayout());
 						cmp = panel;
@@ -228,22 +308,6 @@ public class SwingController extends PrintStreamController {
 						panel.add(field,BorderLayout.CENTER);
 						field.setPreferredSize(new Dimension(100, 24));
 						field.setText(value.toString());
-						if(key.toString().equals(StringKey.label.toString()))
-							field.addFocusListener(new FocusListener() {
-								
-								@Override
-								public void focusLost(FocusEvent e)
-								{
-									thermometer.setLabel(field.getText());
-									field.setText(thermometer.get(StringKey.label));
-									SwingUtilities.getWindowAncestor(boxPanel).validate();
-								}
-								
-								@Override
-								public void focusGained(FocusEvent e) {
-									
-								}
-							});
 					}
 					if(cmp!=null)
 					{
@@ -251,32 +315,123 @@ public class SwingController extends PrintStreamController {
 						gbc.gridy++;
 					}
 				}
+			}
 		}
 	}
 	public class HintTextField extends JTextField {
-	    /**
+		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
 		public HintTextField(String hint) {
-	        _hint = hint;
-	    }
-	    @Override
-	    public void paint(Graphics g) {
-	        super.paint(g);
-	        if (getText().length() == 0) {
-	            int h = getHeight();
-	            ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-	            Insets ins = getInsets();
-	            FontMetrics fm = g.getFontMetrics();
-	            int c0 = getBackground().getRGB();
-	            int c1 = getForeground().getRGB();
-	            int m = 0xfefefefe;
-	            int c2 = ((c0 & m) >>> 1) + ((c1 & m) >>> 1);
-	            g.setColor(new Color(c2, true));
-	            g.drawString(_hint, ins.left, h / 2 + fm.getAscent() / 2 - 2);
-	        }
-	    }
-	    private final String _hint;
+			_hint = hint;
+		}
+		@Override
+		public void paint(Graphics g) {
+			super.paint(g);
+			if (getText().length() == 0) {
+				int h = getHeight();
+				((Graphics2D)g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+				Insets ins = getInsets();
+				FontMetrics fm = g.getFontMetrics();
+				int c0 = getBackground().getRGB();
+				int c1 = getForeground().getRGB();
+				int m = 0xfefefefe;
+				int c2 = ((c0 & m) >>> 1) + ((c1 & m) >>> 1);
+				g.setColor(new Color(c2, true));
+				g.drawString(_hint, ins.left, h / 2 + fm.getAscent() / 2 - 2);
+			}
+		}
+		private final String _hint;
+	}
+	public void comment(LinkedHashMap<Long,String> commentMap)
+	{
+		JTextArea area = new JTextArea();
+		JPanel panel =new JPanel(new GridBagLayout());
+		DefaultListModel<String> model = new DefaultListModel<>();
+		for(Entry<Long, String> entry : commentMap.entrySet())
+			model.addElement(entry.getValue().substring(0, Math.min(10, entry.getValue().length())));
+		JList<String> list = new JList<String>(model);
+		
+		area.addKeyListener(new KeyAdapter() {
+			
+			@Override
+			public void keyTyped(KeyEvent e) {
+				int index=0;
+				long key = -1;
+				for(Entry<Long, String> entry : commentMap.entrySet())
+					if(index++ == list.getSelectedIndex())
+					{
+						key = entry.getKey();
+						break;
+					}
+				index--;
+				commentMap.put(key, area.getText());
+				if(index<0 || model.getSize() <=0 )return;
+				model.setElementAt(area.getText().substring(0, Math.min(10, area.getText().length())),index);
+			}
+		});
+		
+		list.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				int index=0;
+				for(Entry<Long, String> entry : commentMap.entrySet())
+					if(index++ == list.getSelectedIndex())
+					{
+						area.setText(entry.getValue());
+						return;
+					}
+			}
+		});
+		JButton add = new JButton(new AbstractAction("add"){
+			private static final long serialVersionUID = -6488437817173769878L;
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String comment = "comment:";
+				commentMap.put(System.currentTimeMillis(), comment);
+				model.clear();
+				for(Entry<Long, String> entry : commentMap.entrySet())
+					model.addElement(entry.getValue().substring(0, Math.min(10, entry.getValue().length())));
+				area.setText(comment);
+			}});
+		JButton delete = new JButton(new AbstractAction("delete"){
+			private static final long serialVersionUID = -6488437817173769878L;
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int index=0;
+				long key = -1;
+				for(Entry<Long, String> entry : commentMap.entrySet())
+					if(index++ == list.getSelectedIndex())
+					{
+						key = entry.getKey();
+						break;
+					}
+				System.out.println(commentMap.remove(key));
+				model.clear();
+				for(Entry<Long, String> entry : commentMap.entrySet())
+					model.addElement(entry.getValue().substring(0, Math.min(10, entry.getValue().length())));
+				area.setText("");
+			}});
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx=gbc.gridy=0;
+		gbc.weightx=gbc.weighty=1;
+		gbc.gridwidth=2;
+		panel.add(new JScrollPane(list),gbc);
+		gbc.gridwidth=1;
+		gbc.gridy++;
+		panel.add(add,gbc);
+		gbc.gridx++;
+		panel.add(delete,gbc);
+		JPanel commentPanel = new JPanel(new BorderLayout());
+		commentPanel.add(panel,BorderLayout.WEST);
+		commentPanel.add(area,BorderLayout.CENTER);
+		JDialog dlg = new JDialog();
+		dlg.setTitle("Comment Editor");
+		dlg.setContentPane(commentPanel);
+		dlg.setSize(500,500);
+		dlg.setVisible(true);
 	}
 }
+
