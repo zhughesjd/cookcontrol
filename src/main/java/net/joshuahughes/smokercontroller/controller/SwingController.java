@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.TimeZone;
 
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -212,7 +213,7 @@ public class SwingController extends PrintStreamController {
 					JDialog dlg = new JDialog();
 					dlg.setContentPane(new EditorPanel(JCheckBoxButton.this));
 					dlg.setVisible(true);
-					dlg.setSize(300,300);
+					dlg.setSize(500,500);
 				}
 			});
 		}
@@ -368,6 +369,7 @@ public class SwingController extends PrintStreamController {
 			westPanel.add(new JScrollPane(list),BorderLayout.CENTER);
 			add(westPanel,BorderLayout.WEST);
 			add(alertPanel,BorderLayout.CENTER);
+			setBorder(BorderFactory.createLineBorder(Color.red));
 		}
 	}
 	public class HintTextArea extends JTextArea {

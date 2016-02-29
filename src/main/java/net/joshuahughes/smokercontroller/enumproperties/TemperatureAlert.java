@@ -15,6 +15,7 @@ public class TemperatureAlert extends EnumProperties
 	private static int idIncr = 0;
 	public TemperatureAlert()
 	{
+		labelOptions = new String[]{"alarm "+idIncr};
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx=gbc.gridy=0;
 		gbc.weightx=gbc.weighty=1;
@@ -29,7 +30,6 @@ public class TemperatureAlert extends EnumProperties
 		{
 			if(entry.getKey() instanceof Key)
 			{
-				if(entry.getKey().toString().equals(IntKey.probeindex.toString())) continue;
 				JComponent cmp = getComponent(this, (Key<?>) entry.getKey(), entry.getValue());
 				if(cmp!=null)
 				{

@@ -3,6 +3,9 @@ package net.joshuahughes.smokercontroller.enumproperties;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.AbstractMap;
@@ -10,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -17,6 +21,8 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 @SuppressWarnings("unchecked")
 public class EnumProperties extends Properties
@@ -32,6 +38,7 @@ public class EnumProperties extends Properties
 	public <T> T put(Key<T> key,T value){return (T) super.put(key,value);}
 	public LinkedHashMap<Long,String> timeCommentMap = new LinkedHashMap<>();
 	protected JPanel panel = new JPanel();
+	protected String[] labelOptions = new String[]{};
 	public Object get( Object key)
 	{
 		Key<?> enumKey = getKeyValue(key.toString(),null).getKey();
@@ -52,20 +59,12 @@ public class EnumProperties extends Properties
 	public JComponent getComponent(EnumProperties props,Key<?> key,Object value)
 	{
 		JComponent cmp = null;
-		if(value instanceof Integer)
+		if(key.toString().equals(StringKey.label.toString()))
 		{
 			JPanel panel = new JPanel(new BorderLayout());
 			cmp = panel;
 			panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
-			SpinnerNumberModel model = new SpinnerNumberModel((int)value,0, 2000, 1);
-			panel.add(new JSpinner(model ),BorderLayout.CENTER);
-		}
-		else if(key.toString().equals(StringKey.label.toString()))
-		{
-			JPanel panel = new JPanel(new BorderLayout());
-			cmp = panel;
-			panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
-			JComboBox<String> box = new JComboBox<String>(new String[]{"hello","world"});
+			JComboBox<String> box = new JComboBox<String>(labelOptions);
 			box.setEditable(true);
 			box.setSelectedItem(value.toString());
 			panel.add(box,BorderLayout.CENTER);
@@ -82,17 +81,13 @@ public class EnumProperties extends Properties
 				public void focusGained(FocusEvent e) {
 				}
 			});
+			box.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					EnumProperties.this.put(key, box.getSelectedItem());
+				}
+			});
 		}
-		else if(key instanceof StringKey)
-		{
-			JPanel panel = new JPanel(new BorderLayout());
-			cmp = panel;
-			panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
-			JTextField field = new JTextField(key.toString());
-			panel.add(field,BorderLayout.CENTER);
-			field.setPreferredSize(new Dimension(100, 24));
-			field.setText(value.toString());
-		}					
 		else if(key instanceof LongKey)
 		{
 			JPanel panel = new JPanel(new BorderLayout());
@@ -100,6 +95,12 @@ public class EnumProperties extends Properties
 			panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
 			SpinnerNumberModel model = new SpinnerNumberModel((int)value,0, 2000, 1);
 			panel.add(new JSpinner(model ),BorderLayout.CENTER);
+			model.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					put(key,value);
+				}
+			});
 		}
 		else if(key instanceof FloatKey)
 		{
@@ -108,6 +109,12 @@ public class EnumProperties extends Properties
 			panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
 			SpinnerNumberModel model = new SpinnerNumberModel((int)value,0, 2000, 1);
 			panel.add(new JSpinner(model ),BorderLayout.CENTER);
+			model.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					put(key,value);
+				}
+			});
 		}
 		else if(key instanceof IntKey)
 		{
@@ -115,7 +122,13 @@ public class EnumProperties extends Properties
 			cmp = panel;
 			panel.add(new JLabel(key.toString()+": "),BorderLayout.WEST);
 			SpinnerNumberModel model = new SpinnerNumberModel((int)value,0, 2000, 1);
-			panel.add(new JSpinner(model ),BorderLayout.CENTER);
+			panel.add(new JSpinner(model),BorderLayout.CENTER);
+			model.addChangeListener(new ChangeListener() {
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					put(key,value);
+				}
+			});
 		}
 
 		else if(key instanceof StringKey)
@@ -127,6 +140,24 @@ public class EnumProperties extends Properties
 			panel.add(field,BorderLayout.CENTER);
 			field.setPreferredSize(new Dimension(100, 24));
 			field.setText(value.toString());
+			field.addFocusListener(new FocusAdapter() {
+				@Override
+				public void focusLost(FocusEvent e) {
+					put(key,value);
+				}
+			});
+		}
+		else if(key instanceof BooleanKey)
+		{
+			JCheckBox box = new JCheckBox(key.toString(),(boolean) value);
+			cmp = box;
+			box.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					put(key,box.isSelected());
+				}
+			});
 		}
 		return cmp;
 	}
