@@ -14,7 +14,6 @@ import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
@@ -51,12 +50,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.data.time.Second;
-import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
-
+import net.joshuahughes.smokercontroller.enumproperties.EnumProperties;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.FloatKey;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.IntKey;
 import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.Key;
@@ -65,6 +59,12 @@ import net.joshuahughes.smokercontroller.enumproperties.EnumProperties.StringKey
 import net.joshuahughes.smokercontroller.enumproperties.Parameters;
 import net.joshuahughes.smokercontroller.enumproperties.TemperatureAlert;
 import net.joshuahughes.smokercontroller.enumproperties.Thermometer;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.data.time.Second;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
 
 public class SwingController extends PrintStreamController {
 	public static float maxValidTemperature = 900;
@@ -102,7 +102,7 @@ public class SwingController extends PrintStreamController {
 			private static final long serialVersionUID = -5989081975520668735L;
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				comment(parameters.timeCommentMap);
+				EnumProperties.comment(parameters.timeCommentMap);
 				
 			}}),gbc);
 		JFrame frame = new JFrame();
@@ -266,7 +266,7 @@ public class SwingController extends PrintStreamController {
 							public void actionPerformed(ActionEvent e) {
 								Color color = JColorChooser.showDialog(null, "choose line color", colorButton.getBackground());
 								if(color == null) return;
-								thermometer.put(StringKey.color, Thermometer.getString(color));
+								thermometer.put(StringKey.color, EnumProperties.getString(color));
 								colorButton.setBackground(color);
 								colorButton.setForeground(Thermometer.getBW(colorButton.getBackground()));
 								int seriesIndex = dataset.getSeriesIndex(ts.getKey());
@@ -318,18 +318,20 @@ public class SwingController extends PrintStreamController {
 					}
 				}
 			}
-			final JPanel westPanel = new JPanel();
-			JPanel alertPanel = new JPanel();
+			JPanel westPanel = new JPanel();
+			JPanel emptyPanel = new JPanel();
+			add(emptyPanel,BorderLayout.CENTER);
 			DefaultListModel<TemperatureAlert> model = new DefaultListModel<>();
 			JList<TemperatureAlert> list = new JList<>(model);
 			list.addListSelectionListener(new ListSelectionListener() {
-				private JPanel panel = alertPanel;
+				private JPanel panel = list.getSelectedValue()==null?emptyPanel:list.getSelectedValue().getPanel();
 				@Override
 				public void valueChanged(ListSelectionEvent e) {
 					if(list.getSelectedValue()!=null){
 						EditorPanel.this.remove(panel);
-						EditorPanel.this.add(panel = list.getSelectedValue().getPanel(),BorderLayout.CENTER);
+						EditorPanel.this.add(panel = list.getSelectedValue()==null?emptyPanel:list.getSelectedValue().getPanel(),BorderLayout.CENTER);
 						EditorPanel.this.validate();
+						EditorPanel.this.repaint();
 					}						
 				}
 			});
@@ -337,7 +339,7 @@ public class SwingController extends PrintStreamController {
 				private static final long serialVersionUID = -5989081975520668735L;
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					comment(thermometer.timeCommentMap);
+					EnumProperties.comment(thermometer.timeCommentMap);
 				}}),gbc);
 			gbc.gridy++;
 			westWestPanel.add(new JButton(new AbstractAction("add alert..."){
@@ -365,10 +367,12 @@ public class SwingController extends PrintStreamController {
 				}}),gbc);
 			for(TemperatureAlert alert : thermometer.alertSet)
 				model.addElement(alert);
+			westWestPanel.setBorder(BorderFactory.createLineBorder(Color.green));
+			westPanel.setBorder(BorderFactory.createLineBorder(Color.blue));
 			westPanel.add(westWestPanel,BorderLayout.WEST);
 			westPanel.add(new JScrollPane(list),BorderLayout.CENTER);
 			add(westPanel,BorderLayout.WEST);
-			add(alertPanel,BorderLayout.CENTER);
+			add(emptyPanel,BorderLayout.CENTER);
 			setBorder(BorderFactory.createLineBorder(Color.red));
 		}
 	}
@@ -397,124 +401,6 @@ public class SwingController extends PrintStreamController {
 			}
 		}
 		private final String _hint;
-	}
-	public static void comment(LinkedHashMap<Long,String> commentMap)
-	{
-		int height = 300;
-		int areaWidth = 300;
-		JTextArea area = new JTextArea();
-		area.setPreferredSize(new Dimension(areaWidth,height));
-		DefaultListModel<Date> model = new DefaultListModel<>();
-		fill(model,commentMap);
-		JList<Date> list = new JList<>(model);
-		int listWidth = 150;
-		list.setPreferredSize(new Dimension(listWidth,height));
-		area.setEnabled(false);
-		area.addFocusListener(new FocusAdapter() {
-			int indexToSet = -1;
-			@Override
-			public void focusGained(FocusEvent e) {
-				indexToSet = list.getSelectedIndex();
-			}
-			@Override
-			public void focusLost(FocusEvent e) {
-				int index=0;
-				long key = -1;
-				for(Entry<Long, String> entry : commentMap.entrySet())
-					if(index++ == indexToSet)
-					{
-						key = entry.getKey();
-						break;
-					}
-				index--;
-				commentMap.put(key, area.getText());
-			}			
-		});
-		
-		list.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				if(e.getValueIsAdjusting()) return;
-				if(list.getSelectedIndex()<0)
-				{
-					area.setEnabled(false);
-					return;
-				}
-				area.setEnabled(true);
-				int index=0;
-				for(Entry<Long, String> entry : commentMap.entrySet())
-					if(index++ == list.getSelectedIndex())
-					{
-						area.setText(entry.getValue());
-						return;
-					}
-				list.setSelectedIndex(model.getSize()-1);
-			}
-		});
-		JButton add = new JButton(new AbstractAction("add"){
-			private static final long serialVersionUID = -6488437817173769878L;
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String comment = "comment:";
-				commentMap.put(System.currentTimeMillis(), comment);
-				fill(model,commentMap);
-				list.setSelectedIndex(model.size()-1);
-			}});
-		JButton delete = new JButton(new AbstractAction("delete"){
-			private static final long serialVersionUID = -6488437817173769878L;
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int index=0;
-				long key = -1;
-				for(Entry<Long, String> entry : commentMap.entrySet())
-					if(index++ == list.getSelectedIndex())
-					{
-						key = entry.getKey();
-						break;
-					}
-				commentMap.remove(key);
-				fill(model,commentMap);
-				if(model.getSize()<=0)
-					area.setText("");
-				else
-					list.setSelectedIndex(model.size()-1);
-			}});
-		
-		JPanel panel =new JPanel(new GridBagLayout());
-		panel.setPreferredSize(new Dimension(listWidth+10, height));
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx=gbc.gridy=0;
-		gbc.weightx=1;
-		gbc.weighty=.9;
-		gbc.gridwidth=2;
-		gbc.fill = GridBagConstraints.BOTH;
-		panel.add(new JScrollPane(list),gbc);
-		gbc.weighty=.1;
-		gbc.fill = GridBagConstraints.NONE;
-		gbc.gridwidth=1;
-		gbc.gridy++;
-		panel.add(add,gbc);
-		gbc.gridx++;
-		panel.add(delete,gbc);
-		JPanel commentPanel = new JPanel(new BorderLayout());
-		commentPanel.add(panel,BorderLayout.WEST);
-		commentPanel.add(area,BorderLayout.CENTER);
-		JDialog dlg = new JDialog();
-		dlg.setTitle("Comment Editor");
-		dlg.setContentPane(commentPanel);
-		dlg.setSize((int) (area.getPreferredSize().getWidth()+panel.getPreferredSize().getWidth()),height);
-		dlg.pack();
-		dlg.setVisible(true);
-	}
-	private static void fill(DefaultListModel<Date> model, LinkedHashMap<Long, String> commentMap) {
-		model.clear();
-		for(Entry<Long, String> entry : commentMap.entrySet())
-			model.addElement(new Date(entry.getKey()){
-				private static final long serialVersionUID = 5676390436652624926L;
-				public String toString(){
-					return super.toString().substring(11,19);
-				}
-			});
 	}
 }
 

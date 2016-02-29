@@ -14,7 +14,7 @@ public class Thermometer extends EnumProperties implements Comparable<Thermomete
 	public Thermometer(int index, TreeSet<Thermometer> thermometerSet)
 	{
 		set = thermometerSet;
-		put(StringKey.color,getString(new Color(random.nextInt(256),random.nextInt(256),random.nextInt(256))));
+		put(StringKey.color,EnumProperties.getString(new Color(random.nextInt(256),random.nextInt(256),random.nextInt(256))));
 		put(StringKey.label,index<0?"sensor":"probe "+index);
 		put(IntKey.probeindex,Math.max(index, -1));
 	}
@@ -46,18 +46,5 @@ public class Thermometer extends EnumProperties implements Comparable<Thermomete
 	{
 		if(!(object instanceof Thermometer)) return false;
 		return get(StringKey.label).equals(((Thermometer)object).get(StringKey.label));
-	}
-	public static String getString(Color color)
-	{
-		return "0x"+Integer.toHexString(color.getRGB()).substring(2);
-	}
-	public static Color getColor(String string)
-	{
-		return Color.decode(string);
-	}
-	public static Color getBW(Color color)
-	{
-		  double y = (299 * color.getRed() + 587 * color.getGreen() + 114 * color.getBlue()) / 1000;
-		  return y >= 128 ? Color.black : Color.white;
 	}
 }

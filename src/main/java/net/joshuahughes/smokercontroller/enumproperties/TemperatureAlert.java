@@ -1,10 +1,7 @@
 package net.joshuahughes.smokercontroller.enumproperties;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.util.Map.Entry;
+import java.awt.Color;
 
-import javax.swing.JComponent;
 
 public class TemperatureAlert extends EnumProperties
 {
@@ -16,28 +13,14 @@ public class TemperatureAlert extends EnumProperties
 	public TemperatureAlert()
 	{
 		labelOptions = new String[]{"alarm "+idIncr};
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx=gbc.gridy=0;
-		gbc.weightx=gbc.weighty=1;
 		put(StringKey.label,"alarm "+idIncr++);
 		put(StringKey.email,"");
 		put(FloatKey.maxtemperature,500);
+		put(StringKey.color, EnumProperties.getString(Color.red));
 		put(BooleanKey.light, true);
 		put(BooleanKey.sound, true);
 		put(BooleanKey.vibrate, true);
-		panel.setLayout(new GridBagLayout());
-		for(Entry<Object, Object> entry : entrySet())
-		{
-			if(entry.getKey() instanceof Key)
-			{
-				JComponent cmp = getComponent(this, (Key<?>) entry.getKey(), entry.getValue());
-				if(cmp!=null)
-				{
-					panel.add(cmp,gbc);
-					gbc.gridy++;
-				}
-			}
-		}
+		init();
 	}
 	public String toString()
 	{
