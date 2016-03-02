@@ -9,10 +9,8 @@ import net.joshuahughes.smokercontroller.enumproperties.EnumProperties;
 public class Alert extends Parameters<String>
 {
 	private static final long serialVersionUID = 3857793667006092846L;
-	private static int idIncr = 0;
 	public Alert()
 	{
-		putComponent(StringKey.label,Alert.class.getSimpleName().toLowerCase()+" "+idIncr++);
 		putComponent(StringKey.email,"");
 		putComponent(FloatKey.maxtemperature,500f,Float.NEGATIVE_INFINITY,Float.POSITIVE_INFINITY,1f);
 		putComponent(StringKey.color, EnumProperties.getString(Color.red));

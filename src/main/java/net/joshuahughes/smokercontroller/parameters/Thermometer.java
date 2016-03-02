@@ -3,6 +3,7 @@ package net.joshuahughes.smokercontroller.parameters;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import javax.swing.JDialog;
 
@@ -12,8 +13,7 @@ public class Thermometer extends Parameters<Alert>
 	public static Random random = new Random(34234928374l);
 	public Thermometer(int index)
 	{
-		
-		candidateLabels.addAll(Arrays.asList("probe ","ambient ","beef ","chicken ","pork "));
+		super(Arrays.asList(new String[]{"probe","ambient","beef","chicken","pork","fish"}).stream().map(i->i+" "+index).collect(Collectors.toList()).toArray(new String[0]));
 		put(IntKey.index,index);
 		putComponent(StringKey.color,Parameters.getString(new Color(random.nextInt(256),random.nextInt(256),random.nextInt(256))));
 		putComponent(StringKey.label,index<0?"sensor":"probe "+index);

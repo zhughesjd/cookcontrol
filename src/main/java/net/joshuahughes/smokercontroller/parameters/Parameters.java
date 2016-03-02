@@ -11,6 +11,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.lang.reflect.ParameterizedType;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
@@ -44,16 +47,19 @@ public abstract class Parameters<C> extends JPanel{
 	public static enum LongKey implements Key<Long>{utctime,sleep}
 	public static enum IntKey implements Key<Integer>{fantemperatureindex,index}
 	public static enum FloatKey implements Key<Float>{sensortemperature,mintemperature,fanrpm,maxtemperature}
-	public static enum StringKey implements Key<String>{label, email, color}
+	public static enum StringKey implements Key<String>{label, email, color,macaddress}
 	public static enum BooleanKey implements Key<Boolean>{light,vibrate,sound}
+	public int idIncr = 0;
 	private LinkedHashMap<Object,Object> map = new LinkedHashMap<>();
 	private LinkedHashMap<Long,String> comments = new LinkedHashMap<>();
 	protected ChildPanel childPanel = new ChildPanel();
-	protected Vector<String> candidateLabels = new Vector<String>();
-	public Parameters()
+	private Vector<String> candidateLabels = new Vector<String>();
+	public Parameters(String... candidateLabelsArray)
 	{
 		super(new BorderLayout());
+		putComponent(StringKey.label,this.getClass().getSimpleName().toLowerCase()+" "+idIncr++);
 		candidateLabels.addElement(this.getClass().getSimpleName().toLowerCase());
+		candidateLabels.addAll(Arrays.asList(candidateLabelsArray));
 	}
 	public void initialize()
 	{
@@ -414,5 +420,20 @@ public abstract class Parameters<C> extends JPanel{
 	{
 		  double y = (299 * color.getRed() + 587 * color.getGreen() + 114 * color.getBlue()) / 1000;
 		  return y >= 128 ? Color.black : Color.white;
+	}
+	public static final String getMACAddress()
+	{
+		try {
+			NetworkInterface network = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+			byte[] mac = network.getHardwareAddress();
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < mac.length; i++) {
+				sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));        
+			}
+			return sb.toString();
+		} catch (Exception e)
+		{
+		}
+		return "invalid";
 	}
 }
