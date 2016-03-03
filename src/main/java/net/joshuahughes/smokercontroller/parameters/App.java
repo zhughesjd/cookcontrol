@@ -13,6 +13,11 @@ public class App extends Parameters<Controller>
 		initialize();
 	}
 	@Override
+	public void init() {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
 	public boolean addChildOperations() {
 		return false;
 	}

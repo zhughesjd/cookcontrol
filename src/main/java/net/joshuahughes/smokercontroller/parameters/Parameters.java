@@ -10,12 +10,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.io.File;
 import java.lang.reflect.ParameterizedType;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.Vector;
 
@@ -49,24 +54,32 @@ public abstract class Parameters<C> extends JPanel{
 	public static enum FloatKey implements Key<Float>{sensortemperature,mintemperature,fanrpm,maxtemperature}
 	public static enum StringKey implements Key<String>{label, email, color,macaddress}
 	public static enum BooleanKey implements Key<Boolean>{light,vibrate,sound}
-	public int idIncr = 0;
+	public static int idIncr = 0;
+	public static String parametersFileName = Parameters.class.getSimpleName().toLowerCase()+".txt";
+	
 	private LinkedHashMap<Object,Object> map = new LinkedHashMap<>();
 	private LinkedHashMap<Long,String> comments = new LinkedHashMap<>();
 	protected ChildPanel childPanel = new ChildPanel();
 	private Vector<String> candidateLabels = new Vector<String>();
 	public Parameters(String... candidateLabelsArray)
 	{
-		super(new BorderLayout());
+		super(new GridBagLayout());
+		init();
 		putComponent(StringKey.label,this.getClass().getSimpleName().toLowerCase()+" "+idIncr++);
 		candidateLabels.addElement(this.getClass().getSimpleName().toLowerCase());
 		candidateLabels.addAll(Arrays.asList(candidateLabelsArray));
+
+//		Properties properties = new Properties();
+//		Optional<File> optionalFile = Arrays.asList(parentDirectory.listFiles()).stream().filter(f -> f.getName().equalsIgnoreCase(Parameters.parametersFileName)).findAny();
+//		File file = optionalFile.isPresent()?optionalFile.get():new File(parentDirectory.getAbsolutePath()+File.pathSeparator+Parameters.parametersFileName);
 	}
+	public abstract void init();
 	public void initialize()
 	{
 		JPanel centerPanel = new JPanel(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.weightx = gbc.weighty = 1;
 		gbc.gridx = gbc.gridy = 0;
+		gbc.weightx = gbc.weighty = 1;
 		for(Entry<Object, Object> entry : map.entrySet())
 			if(entry.getValue() instanceof Component)
 			{
@@ -80,8 +93,16 @@ public abstract class Parameters<C> extends JPanel{
 				Parameters.comment(comments);
 			}
 		}),gbc);
-		add(centerPanel,BorderLayout.CENTER);
-		add(childPanel,BorderLayout.EAST);
+		gbc = new GridBagConstraints();
+		gbc.gridx = gbc.gridy = 0;
+		gbc.weightx = gbc.weighty = 1;
+		add(centerPanel,gbc);
+		gbc.gridx++;
+		add(childPanel,gbc);
+	}
+	public ChildPanel getChildPanel()
+	{
+		return childPanel;
 	}
 	public <V,K extends Key<V>> V get(K key)
 	{
@@ -95,6 +116,11 @@ public abstract class Parameters<C> extends JPanel{
 	public <V,K extends Key<V>> V putComponent(K key,V... value)
 	{
 		return process(key,value);
+	}
+	private LinkedHashSet<FocusListener> focusListenerSet = new LinkedHashSet<>();
+	public boolean addLabelListener(FocusListener listener)
+	{
+		return focusListenerSet.add(listener);
 	}
 	private <V,K extends Key<V>> V process(K key,V... array)
 	{
@@ -114,8 +140,15 @@ public abstract class Parameters<C> extends JPanel{
 				box = new LabeledComponent<>(key,new JComboBox<String>(candidateLabels));
 				box.getComponent().setEditable(true);
 				box.getComponent().setSelectedItem(array[0].toString());
+				box.getComponent().addFocusListener(new FocusAdapter() {
+					public void focusLost(FocusEvent event)
+					{
+						for(FocusListener l : focusListenerSet)
+							l.focusLost(event);
+					}
+				});
 				panel.add(box,BorderLayout.CENTER);
-				box.setPreferredSize(new Dimension(100, 24));
+				box.setPreferredSize(new Dimension(150, 24));
 				map.put(key,box);
 				return null;
 			}
@@ -227,6 +260,11 @@ public abstract class Parameters<C> extends JPanel{
 		}
 		return (V)returnValue;
 	}
+	public String toString()
+	{
+		String string = get(StringKey.label);
+		return string == null?"":string;
+	}
 	public abstract boolean addChildOperations();
 	public abstract C createChild();
 	public static class LabeledComponent<C extends Component> extends JPanel
@@ -253,6 +291,7 @@ public abstract class Parameters<C> extends JPanel{
 		{
 			super(new GridBagLayout());
 			JScrollPane pane = new JScrollPane(list);
+			System.out.println(Parameters.this.getClass());
 			Class<?> clazz = (Class<?>) ((ParameterizedType)Parameters.this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 			setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),clazz.getSimpleName()));
 			GridBagConstraints gbc = new GridBagConstraints();
@@ -260,6 +299,7 @@ public abstract class Parameters<C> extends JPanel{
 			gbc.weightx = gbc.weighty = 1;
 			gbc.gridx = gbc.gridy = 0;
 			gbc.gridwidth = 2;
+			gbc.fill = GridBagConstraints.VERTICAL;
 			add(pane,gbc);
 			
 			if(addChildOperations())
@@ -287,6 +327,10 @@ public abstract class Parameters<C> extends JPanel{
 				}),gbc);
 				
 			}
+		}
+		public JList<C> getChildList()
+		{
+			return list;
 		}
 	}
 	public static void comment(LinkedHashMap<Long,String> commentMap)
@@ -435,5 +479,10 @@ public abstract class Parameters<C> extends JPanel{
 		{
 		}
 		return "invalid";
+	}
+	public static String getDirectoryName(Class<?> clazz)
+	{
+		if(clazz.equals(Controller.class)) return getMACAddress();
+		return clazz.getSimpleName().toLowerCase()+(clazz.equals(App.class)?"":"."+System.currentTimeMillis());
 	}
 }

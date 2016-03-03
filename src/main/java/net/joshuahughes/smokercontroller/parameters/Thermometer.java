@@ -14,10 +14,12 @@ public class Thermometer extends Parameters<Alert>
 	public Thermometer(int index)
 	{
 		super(Arrays.asList(new String[]{"probe","ambient","beef","chicken","pork","fish"}).stream().map(i->i+" "+index).collect(Collectors.toList()).toArray(new String[0]));
-		put(IntKey.index,index);
+	}
+	@Override
+	public void init() {
 		putComponent(StringKey.color,Parameters.getString(new Color(random.nextInt(256),random.nextInt(256),random.nextInt(256))));
-		putComponent(StringKey.label,index<0?"sensor":"probe "+index);
-		initialize();
+		putComponent(StringKey.label,idIncr<0?"sensor":"probe "+idIncr);
+		idIncr++;
 	}
 	@Override
 	public boolean addChildOperations() {

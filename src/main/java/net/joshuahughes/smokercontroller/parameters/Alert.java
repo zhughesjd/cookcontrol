@@ -35,9 +35,9 @@ public class Alert extends Parameters<String>
 		dlg.setSize(500,500);
 		dlg.setVisible(true);
 	}
-	public String toString()
-	{
-		String string = get(StringKey.label);
-		return string == null?"":string;
+	@Override
+	public void init() {
+		// TODO Auto-generated method stub
+		
 	}
 }

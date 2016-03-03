@@ -20,6 +20,10 @@ public class Smoke extends Parameters<Thermometer>
 	public Thermometer createChild() {
 		return null;
 	}
+	@Override
+	public void init() {
+		
+	}
 	public static void main(String[] args)
 	{
 		JDialog dlg = new JDialog();
