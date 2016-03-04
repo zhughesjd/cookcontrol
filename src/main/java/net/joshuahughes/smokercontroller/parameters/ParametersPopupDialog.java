@@ -1,5 +1,7 @@
 package net.joshuahughes.smokercontroller.parameters;
 
+import java.io.File;
+
 import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
@@ -7,7 +9,6 @@ import javax.swing.event.ListSelectionListener;
 
 public class ParametersPopupDialog extends JDialog{
 	private static final long serialVersionUID = 3264848822760404672L;
-	Controller controller = new Controller()
 //	{
 //		private static final long serialVersionUID = -5558111443516803699L;
 //		public Smoke createChild()
@@ -24,8 +25,9 @@ public class ParametersPopupDialog extends JDialog{
 	JDialog smokeDialog = new JDialog(this);
 	int width = 500;
 	int height = 500;
-	public ParametersPopupDialog()
+	public ParametersPopupDialog() throws Exception
 	{
+		SmokerController controller = new SmokerController(new File(""));
 		setContentPane(controller);
 		setSize(width, height);
 		smokeDialog.setSize(width, height);
@@ -45,7 +47,7 @@ public class ParametersPopupDialog extends JDialog{
 			}
 		});
 	}
-	public static void main(String[] args)
+	public static void main(String[] args) throws Exception
 	{
 		ParametersPopupDialog dlg = new ParametersPopupDialog();
 		dlg.setVisible(true);

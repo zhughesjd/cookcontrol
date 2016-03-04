@@ -11,7 +11,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.lang.reflect.ParameterizedType;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -19,9 +22,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.Optional;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
@@ -48,34 +50,52 @@ import net.joshuahughes.smokercontroller.enumproperties.Thermometer;
 @SuppressWarnings("unchecked")
 public abstract class Parameters<C> extends JPanel{
 	private static final long serialVersionUID = -4605336947758325544L;
-	public interface Key<T>{}
-	public static enum LongKey implements Key<Long>{utctime,sleep}
-	public static enum IntKey implements Key<Integer>{fantemperatureindex,index}
-	public static enum FloatKey implements Key<Float>{sensortemperature,mintemperature,fanrpm,maxtemperature}
-	public static enum StringKey implements Key<String>{label, email, color,macaddress}
-	public static enum BooleanKey implements Key<Boolean>{light,vibrate,sound}
+	public interface Key<T>{public T fromString(String s);}
+	public static enum LongKey implements Key<Long>{utctime,sleep;public Long fromString(String s){return Long.valueOf(s);}}
+	public static enum IntKey implements Key<Integer>{fantemperatureindex,index;public Integer fromString(String s){return Integer.valueOf(s);}}
+	public static enum FloatKey implements Key<Float>{sensortemperature,mintemperature,fanrpm,maxtemperature;public Float fromString(String s){return Float.valueOf(s);}}
+	public static enum StringKey implements Key<String>{label, email, color,macaddress;public String fromString(String s){return String.valueOf(s);}}
+	public static enum BooleanKey implements Key<Boolean>{light,vibrate,sound;public Boolean fromString(String s){return Boolean.valueOf(s);}}
 	public static int idIncr = 0;
 	public static String parametersFileName = Parameters.class.getSimpleName().toLowerCase()+".txt";
-	
+
 	private LinkedHashMap<Object,Object> map = new LinkedHashMap<>();
 	private LinkedHashMap<Long,String> comments = new LinkedHashMap<>();
 	protected ChildPanel childPanel = new ChildPanel();
 	private Vector<String> candidateLabels = new Vector<String>();
-	public Parameters(String... candidateLabelsArray)
+	public Parameters(File directory,String... candidateLabelsArray) throws Exception
 	{
 		super(new GridBagLayout());
+		if(!directory.exists())directory.mkdirs();
 		init();
 		putComponent(StringKey.label,this.getClass().getSimpleName().toLowerCase()+" "+idIncr++);
 		candidateLabels.addElement(this.getClass().getSimpleName().toLowerCase());
 		candidateLabels.addAll(Arrays.asList(candidateLabelsArray));
 
-//		Properties properties = new Properties();
-//		Optional<File> optionalFile = Arrays.asList(parentDirectory.listFiles()).stream().filter(f -> f.getName().equalsIgnoreCase(Parameters.parametersFileName)).findAny();
-//		File file = optionalFile.isPresent()?optionalFile.get():new File(parentDirectory.getAbsolutePath()+File.pathSeparator+Parameters.parametersFileName);
-	}
-	public abstract void init();
-	public void initialize()
-	{
+		Properties properties = new Properties();
+		File parametersFile = new File(directory.getCanonicalPath()+File.separatorChar+parametersFileName);
+		if(parametersFile.exists())
+			properties.load(new FileInputStream(parametersFile));
+		else
+			parametersFile.createNewFile();
+		bw = new BufferedWriter(new FileWriter(file));
+		for(Entry<Object, Object> entry : properties.entrySet())
+		{
+			String[] keyParts = entry.getKey().toString().split("\\.");
+			Key<?> key = null;
+			if(LongKey.class.getSimpleName().equals(keyParts[0]))
+				key = Enum.valueOf(LongKey.class,entry.getValue().toString());
+			if(IntKey.class.getSimpleName().equals(keyParts[0]))
+				key = Enum.valueOf(IntKey.class,entry.getValue().toString());
+			if(FloatKey.class.getSimpleName().equals(keyParts[0]))
+				key = Enum.valueOf(FloatKey.class,entry.getValue().toString());
+			if(StringKey.class.getSimpleName().equals(keyParts[0]))
+				key = Enum.valueOf(StringKey.class,entry.getValue().toString());
+			if(BooleanKey.class.getSimpleName().equals(keyParts[0]))
+				key = Enum.valueOf(BooleanKey.class,entry.getValue().toString());
+			if(key!=null)
+				this.putObject(key,key.fromString(entry.getValue().toString()));
+		}
 		JPanel centerPanel = new JPanel(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = gbc.gridy = 0;
@@ -100,6 +120,14 @@ public abstract class Parameters<C> extends JPanel{
 		gbc.gridx++;
 		add(childPanel,gbc);
 	}
+	private <V,K extends Key<V>> V putObject(K key,Object value)
+	{
+		return put(key,(V)value);
+	}
+	public void load(File directory)
+	{
+	}
+	public abstract void init();
 	public ChildPanel getChildPanel()
 	{
 		return childPanel;
@@ -127,7 +155,7 @@ public abstract class Parameters<C> extends JPanel{
 		Object returnValue = map.get(key);
 		//"get call" with no value for key
 		if(returnValue == null && (array == null || array.length==0)) return null;
-		
+
 		Class<?> clazz = (Class<?>) ((ParameterizedType)key.getClass().getGenericInterfaces()[0]).getActualTypeArguments()[0];
 		if(clazz.isInstance(returnValue)) return (V) returnValue;
 		if(key.equals(StringKey.label))
@@ -172,7 +200,7 @@ public abstract class Parameters<C> extends JPanel{
 				button.setBackground(Parameters.getColor(colorString));
 				button.setForeground(Parameters.getBW(button.getBackground()));
 				button.addActionListener(new ActionListener() {
-					
+
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						JButton thisButton = (JButton) e.getSource();
@@ -204,12 +232,12 @@ public abstract class Parameters<C> extends JPanel{
 				Number[] params = new Number[]{1,0,10000,1};
 				for(int index=0;index<Math.min(params.length,array.length);index++)
 					params[index] =(Number) array[index];
-				 SpinnerNumberModel model = 
-					 clazz.equals(Float.class) || clazz.equals(Double.class) ?
-					new SpinnerNumberModel(params[0].doubleValue(), params[1].doubleValue(), params[2].doubleValue(), params[3].doubleValue()) :
-					new SpinnerNumberModel(params[0].intValue(), params[1].intValue(), params[2].intValue(), params[3].intValue());
-				map.put(key, new LabeledComponent<JSpinner>(key,new JSpinner(model)));
-				return (V)null;
+				SpinnerNumberModel model = 
+						clazz.equals(Float.class) || clazz.equals(Double.class) ?
+								new SpinnerNumberModel(params[0].doubleValue(), params[1].doubleValue(), params[2].doubleValue(), params[3].doubleValue()) :
+									new SpinnerNumberModel(params[0].intValue(), params[1].intValue(), params[2].intValue(), params[3].intValue());
+								map.put(key, new LabeledComponent<JSpinner>(key,new JSpinner(model)));
+								return (V)null;
 			}
 			else
 			{
@@ -265,8 +293,6 @@ public abstract class Parameters<C> extends JPanel{
 		String string = get(StringKey.label);
 		return string == null?"":string;
 	}
-	public abstract boolean addChildOperations();
-	public abstract C createChild();
 	public static class LabeledComponent<C extends Component> extends JPanel
 	{
 		private static final long serialVersionUID = 96159677943410449L;
@@ -301,8 +327,8 @@ public abstract class Parameters<C> extends JPanel{
 			gbc.gridwidth = 2;
 			gbc.fill = GridBagConstraints.VERTICAL;
 			add(pane,gbc);
-			
-			if(addChildOperations())
+
+			if(Parameters.this.getClass().equals(Thermometer.class))
 			{
 				gbc.gridy++;
 				gbc.gridwidth=1;
@@ -310,9 +336,14 @@ public abstract class Parameters<C> extends JPanel{
 					private static final long serialVersionUID = 1L;
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						children.addElement(createChild());
-						ChildPanel.this.validate();
-						ChildPanel.this.repaint();
+						try{
+							children.addElement((C) new Alert(new File("")));
+							ChildPanel.this.validate();
+							ChildPanel.this.repaint();
+						}catch(Exception exception)
+						{
+							exception.printStackTrace();
+						}
 					}
 				}),gbc);
 				gbc.gridx++;
@@ -325,7 +356,7 @@ public abstract class Parameters<C> extends JPanel{
 						ChildPanel.this.repaint();
 					}
 				}),gbc);
-				
+
 			}
 		}
 		public JList<C> getChildList()
@@ -365,7 +396,7 @@ public abstract class Parameters<C> extends JPanel{
 				commentMap.put(key, area.getText());
 			}			
 		});
-		
+
 		list.addListSelectionListener(new ListSelectionListener() {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
@@ -414,7 +445,7 @@ public abstract class Parameters<C> extends JPanel{
 				else
 					list.setSelectedIndex(model.size()-1);
 			}});
-		
+
 		JPanel panel =new JPanel(new GridBagLayout());
 		panel.setPreferredSize(new Dimension(listWidth+10, height));
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -462,8 +493,8 @@ public abstract class Parameters<C> extends JPanel{
 	}
 	public static Color getBW(Color color)
 	{
-		  double y = (299 * color.getRed() + 587 * color.getGreen() + 114 * color.getBlue()) / 1000;
-		  return y >= 128 ? Color.black : Color.white;
+		double y = (299 * color.getRed() + 587 * color.getGreen() + 114 * color.getBlue()) / 1000;
+		return y >= 128 ? Color.black : Color.white;
 	}
 	public static final String getMACAddress()
 	{
@@ -482,7 +513,7 @@ public abstract class Parameters<C> extends JPanel{
 	}
 	public static String getDirectoryName(Class<?> clazz)
 	{
-		if(clazz.equals(Controller.class)) return getMACAddress();
-		return clazz.getSimpleName().toLowerCase()+(clazz.equals(App.class)?"":"."+System.currentTimeMillis());
+		if(clazz.equals(Platform.class)) return getMACAddress();
+		return clazz.getSimpleName().toLowerCase()+(clazz.equals(SmokerController.class)?"":"."+System.currentTimeMillis());
 	}
 }
