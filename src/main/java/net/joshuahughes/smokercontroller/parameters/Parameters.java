@@ -78,7 +78,7 @@ public abstract class Parameters<C> extends JPanel{
 			properties.load(new FileInputStream(parametersFile));
 		else
 			parametersFile.createNewFile();
-		bw = new BufferedWriter(new FileWriter(file));
+//		bw = new BufferedWriter(new FileWriter(file));
 		for(Entry<Object, Object> entry : properties.entrySet())
 		{
 			String[] keyParts = entry.getKey().toString().split("\\.");
