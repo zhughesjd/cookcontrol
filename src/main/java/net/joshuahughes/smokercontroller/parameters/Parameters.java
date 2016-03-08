@@ -11,10 +11,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.lang.reflect.ParameterizedType;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -48,7 +46,7 @@ import javax.swing.event.ListSelectionListener;
 import net.joshuahughes.smokercontroller.enumproperties.Thermometer;
 
 @SuppressWarnings("unchecked")
-public abstract class Parameters<C> extends JPanel{
+public abstract class Parameters<T> extends JPanel{
 	private static final long serialVersionUID = -4605336947758325544L;
 	public interface Key<T>{public T fromString(String s);}
 	public static enum LongKey implements Key<Long>{utctime,sleep;public Long fromString(String s){return Long.valueOf(s);}}
@@ -308,7 +306,7 @@ public abstract class Parameters<C> extends JPanel{
 			return component;
 		}
 	}
-	public class ChildPanel extends JPanel
+	public class ChildPanel<C> extends JPanel
 	{
 		private static final long serialVersionUID = -3623155910463151412L;
 		private DefaultListModel<C> children = new DefaultListModel<>();
