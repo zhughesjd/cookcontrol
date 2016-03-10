@@ -4,14 +4,14 @@
 		<xs:sequence>
 			<xs:element name="comment" minOccurs="0" maxOccurs="unbounded">
 				<xs:complexType>
-					<xs:attribute name="time" type="xs:long"></xs:attribute>
-					<xs:attribute name="remark" type="xs:string"></xs:attribute>
+					<xs:attribute name="time" type="xs:long"/>
+					<xs:attribute name="remark" type="xs:string"/>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="property" minOccurs="0" maxOccurs="unbounded">
 				<xs:complexType>
-					<xs:attribute name="key" type="xs:string"></xs:attribute>
-					<xs:attribute name="value" type="xs:string"></xs:attribute>
+					<xs:attribute name="key" type="xs:string"/>
+					<xs:attribute name="value" type="xs:string"/>
 				</xs:complexType>
 			</xs:element>
 		</xs:sequence>
@@ -27,13 +27,14 @@
 		<xs:complexContent>
 			<xs:extension base="type">
 				<xs:sequence>
-					<xs:element name="alert" type="alerttype" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="alert" type="alerttype" minOccurs="0"	maxOccurs="unbounded" />
 				</xs:sequence>
+				<xs:attribute name="index" type="xs:integer" use="required"/>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
 
-	<xs:complexType name ="smoketype">
+	<xs:complexType name ="cooktype">
 		<xs:complexContent>
 			<xs:extension base="type">
 				<xs:sequence>
@@ -43,26 +44,6 @@
 		</xs:complexContent>
 	</xs:complexType>
 
-	<xs:complexType name ="platformtype">
-		<xs:complexContent>
-			<xs:extension base="type">
-				<xs:sequence>
-					<xs:element name ="smoke" type="smoketype" minOccurs="0" maxOccurs="unbounded"/>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-
-	<xs:complexType name="smokercontrollertype">
-		<xs:complexContent>
-			<xs:extension base="type">
-				<xs:sequence>
-					<xs:element name ="platform" type="platformtype" minOccurs="0" maxOccurs="unbounded"/>
-				</xs:sequence>
-			</xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
-
-	<xs:element name="smokercontroller" type="smokercontrollertype"/>
+	<xs:element name="cook" type="cooktype"/>
 
 </xs:schema>

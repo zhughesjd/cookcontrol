@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import net.joshuahughes.smokercontroller.xml.Alerttype;
 import net.joshuahughes.smokercontroller.xml.Thermometertype;
 
 public class Thermometer extends Parameters<Thermometertype,Alert>
@@ -16,7 +17,10 @@ public class Thermometer extends Parameters<Thermometertype,Alert>
 		super(type,Arrays.asList(new String[]{"probe","ambient","beef","chicken","pork","fish"}).stream().map(i->i+" "+index).collect(Collectors.toList()).toArray(new String[0]));
 	}
 	@Override
-	public void init() {
+	public void init() throws Exception 
+	{
+		for(Alerttype child : type.getAlert())
+			children.add(new Alert(child));
 		putComponent(StringKey.color,Parameters.getString(new Color(random.nextInt(256),random.nextInt(256),random.nextInt(256))));
 		putComponent(StringKey.label,idIncr<0?"sensor":"probe "+idIncr);
 		idIncr++;

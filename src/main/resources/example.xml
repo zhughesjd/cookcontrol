@@ -1,126 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xml>
-<smokercontroller>
+<cook>
 	<property key="key" value="value" />
 	<property key="key" value="value" />
-	<platform>
+	<thermometer index="0">
 		<property key="key" value="value" />
 		<property key="key" value="value" />
-		<smoke>
+		<alert>
 			<property key="key" value="value" />
 			<property key="key" value="value" />
-			<thermometer>
-				<property key="key" value="value" />
-				<property key="key" value="value" />
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-			</thermometer>
-			<thermometer>
-				<property key="key" value="value" />
-				<property key="key" value="value" />
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-			</thermometer>
-		</smoke>
-		<smoke>
+		</alert>
+		<alert>
 			<property key="key" value="value" />
 			<property key="key" value="value" />
-			<thermometer>
-				<property key="key" value="value" />
-				<property key="key" value="value" />
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-			</thermometer>
-			<thermometer>
-				<property key="key" value="value" />
-				<property key="key" value="value" />
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-			</thermometer>
-		</smoke>
-	</platform>
-	<platform>
+		</alert>
+	</thermometer>
+	<thermometer index="1">
 		<property key="key" value="value" />
 		<property key="key" value="value" />
-		<smoke>
+		<alert>
 			<property key="key" value="value" />
 			<property key="key" value="value" />
-			<thermometer>
-				<property key="key" value="value" />
-				<property key="key" value="value" />
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-			</thermometer>
-			<thermometer>
-				<property key="key" value="value" />
-				<property key="key" value="value" />
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-			</thermometer>
-		</smoke>
-		<smoke>
+		</alert>
+		<alert>
 			<property key="key" value="value" />
 			<property key="key" value="value" />
-			<thermometer>
-				<property key="key" value="value" />
-				<property key="key" value="value" />
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-			</thermometer>
-			<thermometer>
-				<property key="key" value="value" />
-				<property key="key" value="value" />
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-				<alert>
-					<property key="key" value="value" />
-					<property key="key" value="value" />
-				</alert>
-			</thermometer>
-		</smoke>
-	</platform>
-</smokercontroller>
+		</alert>
+	</thermometer>
+</cook>

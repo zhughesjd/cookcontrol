@@ -15,8 +15,8 @@ import java.io.File;
 import java.lang.reflect.ParameterizedType;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -40,10 +40,6 @@ import javax.swing.SpinnerNumberModel;
 
 import net.joshuahughes.smokercontroller.enumproperties.Thermometer;
 import net.joshuahughes.smokercontroller.xml.Alerttype;
-import net.joshuahughes.smokercontroller.xml.Platformtype;
-import net.joshuahughes.smokercontroller.xml.Smokercontrollertype;
-import net.joshuahughes.smokercontroller.xml.Smoketype;
-import net.joshuahughes.smokercontroller.xml.Thermometertype;
 import net.joshuahughes.smokercontroller.xml.Type;
 import net.joshuahughes.smokercontroller.xml.Type.Property;
 
@@ -59,6 +55,7 @@ public abstract class Parameters<T extends Type,C> extends JPanel{
 	public static int idIncr = 0;
 	public static String parametersFileName = Parameters.class.getSimpleName().toLowerCase()+".txt";
 
+	protected ArrayList<C> children = new ArrayList<C>();
 	private LinkedHashMap<Object,Object> map = new LinkedHashMap<>();
 	protected ChildPanel childPanel;
 	private Vector<String> candidateLabels = new Vector<String>();
@@ -69,7 +66,7 @@ public abstract class Parameters<T extends Type,C> extends JPanel{
 		super(new GridBagLayout());
 		this.type = type;
 		init();
-		childPanel = new ChildPanel(getChildren(type));
+		childPanel = new ChildPanel(children);
 		commentPanel = new CommentPanel(type.getComment());
 		putComponent(StringKey.label,this.getClass().getSimpleName().toLowerCase()+" "+idIncr++);
 		candidateLabels.addElement(this.getClass().getSimpleName().toLowerCase());
@@ -121,18 +118,6 @@ public abstract class Parameters<T extends Type,C> extends JPanel{
 		gbc.gridx++;
 		add(childPanel,gbc);
 	}
-	private List<C> getChildren(T type) {
-		List<C> list = Collections.emptyList();
-		if(type.getClass().equals(Thermometertype.class))
-			list = (List<C>) ((Thermometertype)type).getAlert();
-		if(type.getClass().equals(Smoketype.class))
-			list = (List<C>) ((Smoketype)type).getThermometer();
-		if(type.getClass().equals(Platformtype.class))
-			list = (List<C>) ((Platformtype)type).getSmoke();
-		if(type.getClass().equals(Smokercontrollertype.class))
-			list = (List<C>) ((Smokercontrollertype)type).getPlatform();
-		return list ;
-	}
 	private <V,K extends Key<V>> V putObject(K key,Object value)
 	{
 		return put(key,(V)value);
@@ -140,7 +125,7 @@ public abstract class Parameters<T extends Type,C> extends JPanel{
 	public void load(File directory)
 	{
 	}
-	public abstract void init();
+	public abstract void init() throws Exception;
 	public ChildPanel getChildPanel()
 	{
 		return childPanel;

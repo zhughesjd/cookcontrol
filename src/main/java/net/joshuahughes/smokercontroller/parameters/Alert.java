@@ -8,9 +8,10 @@ public class Alert extends Parameters<Alerttype,String>
 	public Alert(Alerttype type) throws Exception
 	{
 		super(type);
+		remove(childPanel);
 	}
 	@Override
-	public void init() {
-		remove(this.childPanel);
+	public void init()
+	{
 	}
 }

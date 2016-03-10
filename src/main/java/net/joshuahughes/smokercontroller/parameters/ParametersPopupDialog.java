@@ -1,8 +1,9 @@
 package net.joshuahughes.smokercontroller.parameters;
 
 import javax.swing.JDialog;
+import javax.xml.bind.JAXB;
 
-import net.joshuahughes.smokercontroller.xml.Smokercontrollertype;
+import net.joshuahughes.smokercontroller.xml.Cooktype;
 
 public class ParametersPopupDialog extends JDialog{
 	private static final long serialVersionUID = 3264848822760404672L;
@@ -24,8 +25,8 @@ public class ParametersPopupDialog extends JDialog{
 	int height = 500;
 	public ParametersPopupDialog() throws Exception
 	{
-		SmokerController controller = new SmokerController(new Smokercontrollertype());
-		setContentPane(controller);
+		Cook cook = new Cook(JAXB.unmarshal(getClass().getResourceAsStream("/example.xml"), Cooktype.class));
+		setContentPane(cook);
 		setSize(width, height);
 		smokeDialog.setSize(width, height);
 	}
