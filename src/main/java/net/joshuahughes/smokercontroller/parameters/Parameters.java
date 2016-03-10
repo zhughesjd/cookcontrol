@@ -12,21 +12,19 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
-import java.io.FileInputStream;
 import java.lang.reflect.ParameterizedType;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Arrays;
-import java.util.Date;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Vector;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
@@ -37,16 +35,20 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import net.joshuahughes.smokercontroller.enumproperties.Thermometer;
+import net.joshuahughes.smokercontroller.xml.Alerttype;
+import net.joshuahughes.smokercontroller.xml.Platformtype;
+import net.joshuahughes.smokercontroller.xml.Smokercontrollertype;
+import net.joshuahughes.smokercontroller.xml.Smoketype;
+import net.joshuahughes.smokercontroller.xml.Thermometertype;
+import net.joshuahughes.smokercontroller.xml.Type;
+import net.joshuahughes.smokercontroller.xml.Type.Property;
 
 @SuppressWarnings("unchecked")
-public abstract class Parameters<T> extends JPanel{
+public abstract class Parameters<T extends Type,C> extends JPanel{
 	private static final long serialVersionUID = -4605336947758325544L;
 	public interface Key<T>{public T fromString(String s);}
 	public static enum LongKey implements Key<Long>{utctime,sleep;public Long fromString(String s){return Long.valueOf(s);}}
@@ -58,41 +60,37 @@ public abstract class Parameters<T> extends JPanel{
 	public static String parametersFileName = Parameters.class.getSimpleName().toLowerCase()+".txt";
 
 	private LinkedHashMap<Object,Object> map = new LinkedHashMap<>();
-	private LinkedHashMap<Long,String> comments = new LinkedHashMap<>();
-	protected ChildPanel childPanel = new ChildPanel();
+	protected ChildPanel childPanel;
 	private Vector<String> candidateLabels = new Vector<String>();
-	public Parameters(File directory,String... candidateLabelsArray) throws Exception
+	protected T type;
+	private CommentPanel commentPanel;
+	public Parameters(T type,String... candidateLabelsArray) throws Exception
 	{
 		super(new GridBagLayout());
-		if(!directory.exists())directory.mkdirs();
+		this.type = type;
 		init();
+		childPanel = new ChildPanel(getChildren(type));
+		commentPanel = new CommentPanel(type.getComment());
 		putComponent(StringKey.label,this.getClass().getSimpleName().toLowerCase()+" "+idIncr++);
 		candidateLabels.addElement(this.getClass().getSimpleName().toLowerCase());
 		candidateLabels.addAll(Arrays.asList(candidateLabelsArray));
 
-		Properties properties = new Properties();
-		File parametersFile = new File(directory.getCanonicalPath()+File.separatorChar+parametersFileName);
-		if(parametersFile.exists())
-			properties.load(new FileInputStream(parametersFile));
-		else
-			parametersFile.createNewFile();
-//		bw = new BufferedWriter(new FileWriter(file));
-		for(Entry<Object, Object> entry : properties.entrySet())
+		for(Property property : type.getProperty())
 		{
-			String[] keyParts = entry.getKey().toString().split("\\.");
+			String[] keyParts = property.getKey().toString().split("\\.");
 			Key<?> key = null;
 			if(LongKey.class.getSimpleName().equals(keyParts[0]))
-				key = Enum.valueOf(LongKey.class,entry.getValue().toString());
+				key = Enum.valueOf(LongKey.class,property.getValue().toString());
 			if(IntKey.class.getSimpleName().equals(keyParts[0]))
-				key = Enum.valueOf(IntKey.class,entry.getValue().toString());
+				key = Enum.valueOf(IntKey.class,property.getValue().toString());
 			if(FloatKey.class.getSimpleName().equals(keyParts[0]))
-				key = Enum.valueOf(FloatKey.class,entry.getValue().toString());
+				key = Enum.valueOf(FloatKey.class,property.getValue().toString());
 			if(StringKey.class.getSimpleName().equals(keyParts[0]))
-				key = Enum.valueOf(StringKey.class,entry.getValue().toString());
+				key = Enum.valueOf(StringKey.class,property.getValue().toString());
 			if(BooleanKey.class.getSimpleName().equals(keyParts[0]))
-				key = Enum.valueOf(BooleanKey.class,entry.getValue().toString());
+				key = Enum.valueOf(BooleanKey.class,property.getValue().toString());
 			if(key!=null)
-				this.putObject(key,key.fromString(entry.getValue().toString()));
+				this.putObject(key,key.fromString(property.getValue().toString()));
 		}
 		JPanel centerPanel = new JPanel(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -108,7 +106,12 @@ public abstract class Parameters<T> extends JPanel{
 			private static final long serialVersionUID = 2696590018143251384L;
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Parameters.comment(comments);
+				JDialog dlg = new JDialog();
+				dlg.setTitle("Comment Editor");
+				dlg.setContentPane(commentPanel);
+				dlg.pack();
+				dlg.setSize(500,500);
+				dlg.setVisible(true);
 			}
 		}),gbc);
 		gbc = new GridBagConstraints();
@@ -117,6 +120,18 @@ public abstract class Parameters<T> extends JPanel{
 		add(centerPanel,gbc);
 		gbc.gridx++;
 		add(childPanel,gbc);
+	}
+	private List<C> getChildren(T type) {
+		List<C> list = Collections.emptyList();
+		if(type.getClass().equals(Thermometertype.class))
+			list = (List<C>) ((Thermometertype)type).getAlert();
+		if(type.getClass().equals(Smoketype.class))
+			list = (List<C>) ((Smoketype)type).getThermometer();
+		if(type.getClass().equals(Platformtype.class))
+			list = (List<C>) ((Platformtype)type).getSmoke();
+		if(type.getClass().equals(Smokercontrollertype.class))
+			list = (List<C>) ((Smokercontrollertype)type).getPlatform();
+		return list ;
 	}
 	private <V,K extends Key<V>> V putObject(K key,Object value)
 	{
@@ -306,17 +321,16 @@ public abstract class Parameters<T> extends JPanel{
 			return component;
 		}
 	}
-	public class ChildPanel<C> extends JPanel
+	public class ChildPanel extends JPanel
 	{
 		private static final long serialVersionUID = -3623155910463151412L;
-		private DefaultListModel<C> children = new DefaultListModel<>();
-		private JList<C> list = new JList<>(children);
-		public ChildPanel()
+		private BackedListModel<C> children;
+		private JList<C> list;
+		public ChildPanel(List<C> c)
 		{
 			super(new GridBagLayout());
-			JScrollPane pane = new JScrollPane(list);
-			System.out.println(Parameters.this.getClass());
-			Class<?> clazz = (Class<?>) ((ParameterizedType)Parameters.this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+			JScrollPane pane = new JScrollPane(list = new JList<>(children = new BackedListModel<>(c)));
+			Class<?> clazz = (Class<?>) ((ParameterizedType)Parameters.this.getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 			setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),clazz.getSimpleName()));
 			GridBagConstraints gbc = new GridBagConstraints();
 
@@ -335,7 +349,7 @@ public abstract class Parameters<T> extends JPanel{
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						try{
-							children.addElement((C) new Alert(new File("")));
+							children.addElement((C) new Alert(new Alerttype()));
 							ChildPanel.this.validate();
 							ChildPanel.this.repaint();
 						}catch(Exception exception)
@@ -362,125 +376,6 @@ public abstract class Parameters<T> extends JPanel{
 			return list;
 		}
 	}
-	public static void comment(LinkedHashMap<Long,String> commentMap)
-	{
-		int height = 300;
-		int areaWidth = 300;
-		JTextArea area = new JTextArea();
-		area.setPreferredSize(new Dimension(areaWidth,height));
-		DefaultListModel<Date> model = new DefaultListModel<>();
-		fill(model,commentMap);
-		JList<Date> list = new JList<>(model);
-		int listWidth = 150;
-		list.setPreferredSize(new Dimension(listWidth,height));
-		area.setEnabled(false);
-		area.addFocusListener(new FocusAdapter() {
-			int indexToSet = -1;
-			@Override
-			public void focusGained(FocusEvent e) {
-				indexToSet = list.getSelectedIndex();
-			}
-			@Override
-			public void focusLost(FocusEvent e) {
-				int index=0;
-				long key = -1;
-				for(Entry<Long, String> entry : commentMap.entrySet())
-					if(index++ == indexToSet)
-					{
-						key = entry.getKey();
-						break;
-					}
-				index--;
-				commentMap.put(key, area.getText());
-			}			
-		});
-
-		list.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				if(e.getValueIsAdjusting()) return;
-				if(list.getSelectedIndex()<0)
-				{
-					area.setEnabled(false);
-					return;
-				}
-				area.setEnabled(true);
-				int index=0;
-				for(Entry<Long, String> entry : commentMap.entrySet())
-					if(index++ == list.getSelectedIndex())
-					{
-						area.setText(entry.getValue());
-						return;
-					}
-				list.setSelectedIndex(model.getSize()-1);
-			}
-		});
-		JButton add = new JButton(new AbstractAction("add"){
-			private static final long serialVersionUID = -6488437817173769878L;
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String comment = "comment:";
-				commentMap.put(System.currentTimeMillis(), comment);
-				fill(model,commentMap);
-				list.setSelectedIndex(model.size()-1);
-			}});
-		JButton delete = new JButton(new AbstractAction("delete"){
-			private static final long serialVersionUID = -6488437817173769878L;
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				int index=0;
-				long key = -1;
-				for(Entry<Long, String> entry : commentMap.entrySet())
-					if(index++ == list.getSelectedIndex())
-					{
-						key = entry.getKey();
-						break;
-					}
-				commentMap.remove(key);
-				fill(model,commentMap);
-				if(model.getSize()<=0)
-					area.setText("");
-				else
-					list.setSelectedIndex(model.size()-1);
-			}});
-
-		JPanel panel =new JPanel(new GridBagLayout());
-		panel.setPreferredSize(new Dimension(listWidth+10, height));
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.gridx=gbc.gridy=0;
-		gbc.weightx=1;
-		gbc.weighty=.9;
-		gbc.gridwidth=2;
-		gbc.fill = GridBagConstraints.BOTH;
-		panel.add(new JScrollPane(list),gbc);
-		gbc.weighty=.1;
-		gbc.fill = GridBagConstraints.NONE;
-		gbc.gridwidth=1;
-		gbc.gridy++;
-		panel.add(add,gbc);
-		gbc.gridx++;
-		panel.add(delete,gbc);
-		JPanel commentPanel = new JPanel(new BorderLayout());
-		commentPanel.add(panel,BorderLayout.WEST);
-		commentPanel.add(area,BorderLayout.CENTER);
-		JDialog dlg = new JDialog();
-		dlg.setTitle("Comment Editor");
-		dlg.setContentPane(commentPanel);
-		dlg.setSize((int) (area.getPreferredSize().getWidth()+panel.getPreferredSize().getWidth()),height);
-		dlg.pack();
-		dlg.setVisible(true);
-	}	
-	private static void fill(DefaultListModel<Date> model, LinkedHashMap<Long, String> commentMap) {
-		model.clear();
-		for(Entry<Long, String> entry : commentMap.entrySet())
-			model.addElement(new Date(entry.getKey()){
-				private static final long serialVersionUID = 5676390436652624926L;
-				public String toString(){
-					return super.toString().substring(11,19);
-				}
-			});
-	}
-
 	public static String getString(Color color)
 	{
 		return "0x"+Integer.toHexString(color.getRGB()).substring(2);
@@ -508,10 +403,5 @@ public abstract class Parameters<T> extends JPanel{
 		{
 		}
 		return "invalid";
-	}
-	public static String getDirectoryName(Class<?> clazz)
-	{
-		if(clazz.equals(Platform.class)) return getMACAddress();
-		return clazz.getSimpleName().toLowerCase()+(clazz.equals(SmokerController.class)?"":"."+System.currentTimeMillis());
 	}
 }

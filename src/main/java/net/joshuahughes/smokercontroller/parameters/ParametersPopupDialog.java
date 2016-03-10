@@ -1,11 +1,8 @@
 package net.joshuahughes.smokercontroller.parameters;
 
-import java.io.File;
-
 import javax.swing.JDialog;
-import javax.swing.JList;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+
+import net.joshuahughes.smokercontroller.xml.Smokercontrollertype;
 
 public class ParametersPopupDialog extends JDialog{
 	private static final long serialVersionUID = 3264848822760404672L;
@@ -27,25 +24,10 @@ public class ParametersPopupDialog extends JDialog{
 	int height = 500;
 	public ParametersPopupDialog() throws Exception
 	{
-		SmokerController controller = new SmokerController(new File(""));
+		SmokerController controller = new SmokerController(new Smokercontrollertype());
 		setContentPane(controller);
 		setSize(width, height);
 		smokeDialog.setSize(width, height);
-		controller.getChildPanel().getChildList().addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				if(e.getValueIsAdjusting()) return;
-				Smoke smoke = (Smoke) ((JList<?>)e.getSource()).getSelectedValue();
-				boolean visibility = false;
-				if(smoke != null)
-				{
-					visibility = true;
-					smokeDialog.setContentPane(smoke);
-					smokeDialog.setTitle(smoke.toString());
-				}
-				smokeDialog.setVisible(visibility);
-			}
-		});
 	}
 	public static void main(String[] args) throws Exception
 	{

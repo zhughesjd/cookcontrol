@@ -1,12 +1,13 @@
 package net.joshuahughes.smokercontroller.parameters;
 
-import java.io.File;
 import java.util.Random;
 
-public class Platform extends Parameters<Smoke>
+import net.joshuahughes.smokercontroller.xml.Platformtype;
+
+public class Platform extends Parameters<Platformtype,Smoke>
 {
-	public Platform(File directory)throws Exception {
-		super(directory);
+	public Platform(Platformtype type)throws Exception {
+		super(type);
 	}
 	private static final long serialVersionUID = 3857793667006092846L;
 	public static Random random = new Random(34234928374l);

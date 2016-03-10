@@ -2,6 +2,12 @@
 
 	<xs:complexType name="type">
 		<xs:sequence>
+			<xs:element name="comment" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:attribute name="time" type="xs:long"></xs:attribute>
+					<xs:attribute name="remark" type="xs:string"></xs:attribute>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="property" minOccurs="0" maxOccurs="unbounded">
 				<xs:complexType>
 					<xs:attribute name="key" type="xs:string"></xs:attribute>

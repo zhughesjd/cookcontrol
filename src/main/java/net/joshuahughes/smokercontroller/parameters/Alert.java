@@ -1,13 +1,13 @@
 package net.joshuahughes.smokercontroller.parameters;
 
-import java.io.File;
+import net.joshuahughes.smokercontroller.xml.Alerttype;
 
-public class Alert extends Parameters<String>
+public class Alert extends Parameters<Alerttype,String>
 {
 	private static final long serialVersionUID = 3857793667006092846L;
-	public Alert(File directory) throws Exception
+	public Alert(Alerttype type) throws Exception
 	{
-		super(directory);
+		super(type);
 	}
 	@Override
 	public void init() {

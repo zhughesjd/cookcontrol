@@ -1,12 +1,13 @@
 package net.joshuahughes.smokercontroller.parameters;
 
-import java.io.File;
 import java.util.Random;
 
-public class Smoke extends Parameters<Thermometer>
+import net.joshuahughes.smokercontroller.xml.Smoketype;
+
+public class Smoke extends Parameters<Smoketype,Thermometer>
 {
-	public Smoke(File directory)throws Exception {
-		super(directory);
+	public Smoke(Smoketype type)throws Exception {
+		super(type);
 	}
 	private static final long serialVersionUID = 3857793667006092846L;
 	public static Random random = new Random(34234928374l);
