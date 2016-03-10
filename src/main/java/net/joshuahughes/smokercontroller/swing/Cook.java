@@ -9,6 +9,7 @@ public class Cook extends Parameters<Cooktype,Thermometer>
 {
 	public Cook(Cooktype type)throws Exception {
 		super(type);
+		setVisible(true);
 	}
 	private static final long serialVersionUID = 3857793667006092846L;
 	public static Random random = new Random(34234928374l);

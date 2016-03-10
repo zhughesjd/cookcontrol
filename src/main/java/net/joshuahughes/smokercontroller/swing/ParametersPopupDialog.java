@@ -5,21 +5,13 @@ import javax.xml.bind.JAXB;
 
 import net.joshuahughes.smokercontroller.xml.Cooktype;
 
-public class ParametersPopupDialog extends JDialog{
-	private static final long serialVersionUID = 3264848822760404672L;
-	JDialog smokeDialog = new JDialog(this);
-	int width = 500;
-	int height = 500;
-	public ParametersPopupDialog() throws Exception
-	{
-		Cook cook = new Cook(JAXB.unmarshal(getClass().getResourceAsStream("/example.xml"), Cooktype.class));
-		setContentPane(cook);
-		setSize(width, height);
-		smokeDialog.setSize(width, height);
-	}
+public class ParametersPopupDialog{
 	public static void main(String[] args) throws Exception
 	{
-		ParametersPopupDialog dlg = new ParametersPopupDialog();
+		JDialog dlg = new JDialog(); 
+		Cook cook = new Cook(JAXB.unmarshal(ParametersPopupDialog.class.getResourceAsStream("/example.xml"), Cooktype.class));
+		dlg.setContentPane(cook);
+		dlg.setSize(1000, 1000);
 		dlg.setVisible(true);
 	}
 }

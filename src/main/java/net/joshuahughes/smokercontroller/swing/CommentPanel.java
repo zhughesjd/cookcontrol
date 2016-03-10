@@ -48,9 +48,14 @@ public class CommentPanel extends JPanel
 		});
 		area.setEnabled(false);
 		area.addFocusListener(new FocusAdapter() {
+			Comment comment = null;
 			@Override
+			public void focusGained(FocusEvent e) {
+				comment = list.getSelectedValue();
+			}			
 			public void focusLost(FocusEvent e) {
-				list.getSelectedValue().setRemark(area.getText());
+				if(comment != null)
+					comment.setRemark(area.getText());
 			}			
 		});
 		list.addListSelectionListener(new ListSelectionListener() {

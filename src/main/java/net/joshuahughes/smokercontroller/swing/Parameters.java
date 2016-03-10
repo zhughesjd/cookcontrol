@@ -11,12 +11,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.lang.reflect.ParameterizedType;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -43,7 +46,8 @@ import net.joshuahughes.smokercontroller.xml.Type;
 import net.joshuahughes.smokercontroller.xml.Type.Property;
 
 @SuppressWarnings("unchecked")
-public abstract class Parameters<T extends Type,C> extends JPanel{
+public abstract class Parameters<T extends Type,C extends Parameters<?, ?>> extends JPanel
+{
 	private static final long serialVersionUID = -4605336947758325544L;
 	public interface Key<T>{public T fromString(String s);}
 	public static enum LongKey implements Key<Long>{utctime,sleep;public Long fromString(String s){return Long.valueOf(s);}}
@@ -51,7 +55,6 @@ public abstract class Parameters<T extends Type,C> extends JPanel{
 	public static enum FloatKey implements Key<Float>{sensortemperature,mintemperature,fanrpm,maxtemperature;public Float fromString(String s){return Float.valueOf(s);}}
 	public static enum StringKey implements Key<String>{label, email, color,macaddress;public String fromString(String s){return String.valueOf(s);}}
 	public static enum BooleanKey implements Key<Boolean>{light,vibrate,sound;public Boolean fromString(String s){return Boolean.valueOf(s);}}
-	public static int idIncr = 0;
 	public static String parametersFileName = Parameters.class.getSimpleName().toLowerCase()+".txt";
 
 	protected ArrayList<C> children = new ArrayList<C>();
@@ -67,8 +70,9 @@ public abstract class Parameters<T extends Type,C> extends JPanel{
 		init();
 		childPanel = new ChildPanel(children);
 		commentPanel = new CommentPanel(type.getComment());
-		putComponent(StringKey.label,this.getClass().getSimpleName().toLowerCase()+" "+idIncr++);
-		candidateLabels.addElement(this.getClass().getSimpleName().toLowerCase());
+		String label = this.getClass().getSimpleName().toLowerCase()+" "+new Date(System.currentTimeMillis()).toString();
+		putComponent(StringKey.label,label);
+		candidateLabels.addElement(label);
 		candidateLabels.addAll(Arrays.asList(candidateLabelsArray));
 
 		for(Property property : type.getProperty())
@@ -316,7 +320,13 @@ public abstract class Parameters<T extends Type,C> extends JPanel{
 			gbc.gridwidth = 2;
 			gbc.fill = GridBagConstraints.VERTICAL;
 			add(pane,gbc);
-
+			list.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e)
+				{
+					if(e.getClickCount()>=2 && list.getSelectedValue()!=null)
+						list.getSelectedValue().setVisible(true);
+				}
+			});
 			if(Parameters.this.getClass().equals(Thermometer.class))
 			{
 				gbc.gridy++;
