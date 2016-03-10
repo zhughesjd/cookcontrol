@@ -1,4 +1,4 @@
-package net.joshuahughes.smokercontroller.parameters;
+package net.joshuahughes.smokercontroller.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -29,7 +29,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -90,6 +89,7 @@ public abstract class Parameters<T extends Type,C> extends JPanel{
 				this.putObject(key,key.fromString(property.getValue().toString()));
 		}
 		JPanel centerPanel = new JPanel(new GridBagLayout());
+		centerPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),"Parameters"));
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = gbc.gridy = 0;
 		gbc.weightx = gbc.weighty = 1;
@@ -99,22 +99,14 @@ public abstract class Parameters<T extends Type,C> extends JPanel{
 				centerPanel.add((Component) entry.getValue(), gbc);
 				gbc.gridy++;
 			}
-		centerPanel.add(new JButton(new AbstractAction("comments") {
-			private static final long serialVersionUID = 2696590018143251384L;
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JDialog dlg = new JDialog();
-				dlg.setTitle("Comment Editor");
-				dlg.setContentPane(commentPanel);
-				dlg.pack();
-				dlg.setSize(500,500);
-				dlg.setVisible(true);
-			}
-		}),gbc);
+
 		gbc = new GridBagConstraints();
+		gbc.fill = GridBagConstraints.BOTH;
 		gbc.gridx = gbc.gridy = 0;
 		gbc.weightx = gbc.weighty = 1;
 		add(centerPanel,gbc);
+		gbc.gridx++;
+		add(commentPanel,gbc);
 		gbc.gridx++;
 		add(childPanel,gbc);
 	}

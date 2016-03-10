@@ -1,4 +1,4 @@
-package net.joshuahughes.smokercontroller.parameters;
+package net.joshuahughes.smokercontroller.swing;
 
 import net.joshuahughes.smokercontroller.xml.Alerttype;
 

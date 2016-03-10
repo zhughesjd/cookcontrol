@@ -1,4 +1,4 @@
-package net.joshuahughes.smokercontroller.parameters;
+package net.joshuahughes.smokercontroller.swing;
 
 import java.awt.Color;
 import java.util.Arrays;
@@ -15,6 +15,7 @@ public class Thermometer extends Parameters<Thermometertype,Alert>
 	public Thermometer(Thermometertype type,int index) throws Exception
 	{
 		super(type,Arrays.asList(new String[]{"probe","ambient","beef","chicken","pork","fish"}).stream().map(i->i+" "+index).collect(Collectors.toList()).toArray(new String[0]));
+		putComponent(StringKey.label,index<0?"sensor":"probe "+index);
 	}
 	@Override
 	public void init() throws Exception 
@@ -22,7 +23,5 @@ public class Thermometer extends Parameters<Thermometertype,Alert>
 		for(Alerttype child : type.getAlert())
 			children.add(new Alert(child));
 		putComponent(StringKey.color,Parameters.getString(new Color(random.nextInt(256),random.nextInt(256),random.nextInt(256))));
-		putComponent(StringKey.label,idIncr<0?"sensor":"probe "+idIncr);
-		idIncr++;
 	}
 }

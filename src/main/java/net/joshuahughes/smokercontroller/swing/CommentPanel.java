@@ -1,6 +1,7 @@
-package net.joshuahughes.smokercontroller.parameters;
+package net.joshuahughes.smokercontroller.swing;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -11,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer.UIResource;
 import javax.swing.JButton;
 import javax.swing.JList;
@@ -32,6 +34,7 @@ public class CommentPanel extends JPanel
 	public CommentPanel(List<Comment> commentList)
 	{
 		super(new BorderLayout());
+		setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Comments"));
 		list = new JList<>(model = new BackedListModel<>(commentList));
 		ListCellRenderer<? super Comment> defaultRenderer = list.getCellRenderer();
 		list.setCellRenderer(new ListCellRenderer<Comment>() {
