@@ -1,7 +1,7 @@
 <root>
   <facet id="jpt.jaxb">
     <node name="classgen">
-      <attribute name="package" value="net.joshuahughes.smokercontroller.xml"/>
+      <attribute name="package" value="net.joshuahughes.cookcontrol.xml"/>
     </node>
   </facet>
 </root>

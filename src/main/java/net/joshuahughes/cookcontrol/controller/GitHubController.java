@@ -15,7 +15,7 @@ import net.joshuahughes.cookcontrol.enumproperties.Parameters;
 public class GitHubController implements Controller{
 	public static String macAddress = getMACAddress();
 	public static String homePath = System.getProperty("user.home");
-	public static String gitDirectoryPath = homePath+"\\smokercontroller\\";
+	public static String gitDirectoryPath = homePath+"\\cookcontrol\\";
 	public static String branch = "gh-pages";
 	public GitHubController() throws Exception
 	{
@@ -24,7 +24,7 @@ public class GitHubController implements Controller{
 		if(!gitDirectory.exists())
 		{
 			git = Git.cloneRepository()
-					.setURI( "https://github.com/zhughesjd/smokercontroller.git" )
+					.setURI( "https://github.com/zhughesjd/cookcontrol.git" )
 					.setDirectory( gitDirectory )
 					.setBranchesToClone( Collections.singleton( branch ) )
 					.setBranch( branch )

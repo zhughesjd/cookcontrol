@@ -106,7 +106,7 @@ public class SwingController extends PrintStreamController {
 				
 			}}),gbc);
 		JFrame frame = new JFrame();
-		frame.setTitle("Smoker Controller");
+		frame.setTitle("Cook Control");
 		Container content = frame.getContentPane();
 		content.setLayout(new BorderLayout());
 		content.add(new JScrollPane(controlPanel), BorderLayout.WEST);

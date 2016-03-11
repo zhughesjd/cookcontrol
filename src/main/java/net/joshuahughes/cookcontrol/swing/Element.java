@@ -298,7 +298,7 @@ public abstract class Element<T extends Type,C extends Element<?, ?>> extends JP
 	public void addMouseListener(MouseAdapter adapter)
 	{
 		set.add(adapter);
-		childPanel.addMouseListener(adapter);
+		childPanel.getChildList().addMouseListener(adapter);
 		for(C child : this.children)
 			child.addMouseListener(adapter);
 	}
