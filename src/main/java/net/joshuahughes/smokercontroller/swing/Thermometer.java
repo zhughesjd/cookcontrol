@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import net.joshuahughes.smokercontroller.xml.Alerttype;
 import net.joshuahughes.smokercontroller.xml.Thermometertype;
 
-public class Thermometer extends Parameters<Thermometertype,Alert>
+public class Thermometer extends Element<Thermometertype,Alert>
 {
 	private static final long serialVersionUID = 3857793667006092846L;
 	public static Random random = new Random(34234928374l);
@@ -18,10 +18,10 @@ public class Thermometer extends Parameters<Thermometertype,Alert>
 		putComponent(StringKey.label,index<0?"sensor":"probe "+index);
 	}
 	@Override
-	public void init() throws Exception 
+	protected void init(Thermometertype type) throws Exception 
 	{
 		for(Alerttype child : type.getAlert())
 			children.add(new Alert(child));
-		putComponent(StringKey.color,Parameters.getString(new Color(random.nextInt(256),random.nextInt(256),random.nextInt(256))));
+		putComponent(StringKey.color,Element.getString(new Color(random.nextInt(256),random.nextInt(256),random.nextInt(256))));
 	}
 }

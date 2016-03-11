@@ -12,7 +12,6 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.lang.reflect.ParameterizedType;
 import java.net.InetAddress;
@@ -46,7 +45,7 @@ import net.joshuahughes.smokercontroller.xml.Type;
 import net.joshuahughes.smokercontroller.xml.Type.Property;
 
 @SuppressWarnings("unchecked")
-public abstract class Parameters<T extends Type,C extends Parameters<?, ?>> extends JPanel
+public abstract class Element<T extends Type,C extends Element<?, ?>> extends JPanel
 {
 	private static final long serialVersionUID = -4605336947758325544L;
 	public interface Key<T>{public T fromString(String s);}
@@ -55,21 +54,19 @@ public abstract class Parameters<T extends Type,C extends Parameters<?, ?>> exte
 	public static enum FloatKey implements Key<Float>{sensortemperature,mintemperature,fanrpm,maxtemperature;public Float fromString(String s){return Float.valueOf(s);}}
 	public static enum StringKey implements Key<String>{label, email, color,macaddress;public String fromString(String s){return String.valueOf(s);}}
 	public static enum BooleanKey implements Key<Boolean>{light,vibrate,sound;public Boolean fromString(String s){return Boolean.valueOf(s);}}
-	public static String parametersFileName = Parameters.class.getSimpleName().toLowerCase()+".txt";
+	public static String parametersFileName = Element.class.getSimpleName().toLowerCase()+".txt";
 
 	protected ArrayList<C> children = new ArrayList<C>();
 	private LinkedHashMap<Object,Object> map = new LinkedHashMap<>();
-	protected ChildPanel childPanel;
 	private Vector<String> candidateLabels = new Vector<String>();
-	protected T type;
-	private CommentPanel commentPanel;
-	public Parameters(T type,String... candidateLabelsArray) throws Exception
+	private LinkedHashSet<MouseAdapter> set = new LinkedHashSet<>();
+	ChildPanel childPanel;
+	public Element(T type,String... candidateLabelsArray) throws Exception
 	{
 		super(new GridBagLayout());
-		this.type = type;
-		init();
+		init(type);
 		childPanel = new ChildPanel(children);
-		commentPanel = new CommentPanel(type.getComment());
+		CommentPanel commentPanel = new CommentPanel(type.getComment());
 		String label = this.getClass().getSimpleName().toLowerCase()+" "+new Date(System.currentTimeMillis()).toString();
 		putComponent(StringKey.label,label);
 		candidateLabels.addElement(label);
@@ -121,11 +118,7 @@ public abstract class Parameters<T extends Type,C extends Parameters<?, ?>> exte
 	public void load(File directory)
 	{
 	}
-	public abstract void init() throws Exception;
-	public ChildPanel getChildPanel()
-	{
-		return childPanel;
-	}
+	protected abstract void init(T type) throws Exception;
 	public <V,K extends Key<V>> V get(K key)
 	{
 		return process(key);
@@ -191,8 +184,8 @@ public abstract class Parameters<T extends Type,C extends Parameters<?, ?>> exte
 			if(button == null)
 			{
 				button = new JButton(StringKey.color.name());
-				button.setBackground(Parameters.getColor(colorString));
-				button.setForeground(Parameters.getBW(button.getBackground()));
+				button.setBackground(Element.getColor(colorString));
+				button.setForeground(Element.getBW(button.getBackground()));
 				button.addActionListener(new ActionListener() {
 
 					@Override
@@ -213,8 +206,8 @@ public abstract class Parameters<T extends Type,C extends Parameters<?, ?>> exte
 				// get
 				if(array.length<=0) return value;
 				//put
-				button.setBackground(Parameters.getColor(array[0].toString()));
-				button.setForeground(Parameters.getBW(button.getBackground()));
+				button.setBackground(Element.getColor(array[0].toString()));
+				button.setForeground(Element.getBW(button.getBackground()));
 				return value;
 			}
 		}
@@ -302,6 +295,13 @@ public abstract class Parameters<T extends Type,C extends Parameters<?, ?>> exte
 			return component;
 		}
 	}
+	public void addMouseListener(MouseAdapter adapter)
+	{
+		set.add(adapter);
+		childPanel.addMouseListener(adapter);
+		for(C child : this.children)
+			child.addMouseListener(adapter);
+	}
 	public class ChildPanel extends JPanel
 	{
 		private static final long serialVersionUID = -3623155910463151412L;
@@ -311,7 +311,7 @@ public abstract class Parameters<T extends Type,C extends Parameters<?, ?>> exte
 		{
 			super(new GridBagLayout());
 			JScrollPane pane = new JScrollPane(list = new JList<>(children = new BackedListModel<>(c)));
-			Class<?> clazz = (Class<?>) ((ParameterizedType)Parameters.this.getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+			Class<?> clazz = (Class<?>) ((ParameterizedType)Element.this.getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 			setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),clazz.getSimpleName()));
 			GridBagConstraints gbc = new GridBagConstraints();
 
@@ -320,14 +320,7 @@ public abstract class Parameters<T extends Type,C extends Parameters<?, ?>> exte
 			gbc.gridwidth = 2;
 			gbc.fill = GridBagConstraints.VERTICAL;
 			add(pane,gbc);
-			list.addMouseListener(new MouseAdapter() {
-				public void mouseClicked(MouseEvent e)
-				{
-					if(e.getClickCount()>=2 && list.getSelectedValue()!=null)
-						list.getSelectedValue().setVisible(true);
-				}
-			});
-			if(Parameters.this.getClass().equals(Thermometer.class))
+			if(Element.this.getClass().equals(Thermometer.class))
 			{
 				gbc.gridy++;
 				gbc.gridwidth=1;
