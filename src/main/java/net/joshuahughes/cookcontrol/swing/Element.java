@@ -48,12 +48,14 @@ import net.joshuahughes.cookcontrol.xml.Type.Property;
 public abstract class Element<T extends Type,C extends Element<?, ?>> extends JPanel
 {
 	private static final long serialVersionUID = -4605336947758325544L;
+	
 	public interface Key<T>{public T fromString(String s);}
 	public static enum LongKey implements Key<Long>{utctime,sleep;public Long fromString(String s){return Long.valueOf(s);}}
 	public static enum IntKey implements Key<Integer>{fantemperatureindex,index;public Integer fromString(String s){return Integer.valueOf(s);}}
 	public static enum FloatKey implements Key<Float>{sensortemperature,mintemperature,fanrpm,maxtemperature;public Float fromString(String s){return Float.valueOf(s);}}
 	public static enum StringKey implements Key<String>{label, email, color,macaddress;public String fromString(String s){return String.valueOf(s);}}
 	public static enum BooleanKey implements Key<Boolean>{light,vibrate,sound;public Boolean fromString(String s){return Boolean.valueOf(s);}}
+
 	public static String parametersFileName = Element.class.getSimpleName().toLowerCase()+".txt";
 
 	protected ArrayList<C> children = new ArrayList<C>();

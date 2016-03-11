@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xml>
 <cook>
-	<property key="key" value="value" />
+	<property type="StringKey" key="key" value="value" />
 	<property key="key" value="value" />
 	<thermometer index="0">
 		<property key="key" value="value" />
