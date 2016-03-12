@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="cook" type="cook"/>
+
+  <xs:complexType name="stringProperty">
+    <xs:complexContent>
+      <xs:extension base="property">
+        <xs:sequence/>
+        <xs:attribute name="key" type="stringKey"/>
+        <xs:attribute name="value" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="property">
+    <xs:sequence/>
+    <xs:attribute name="editable" type="xs:boolean" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="integerProperty">
+    <xs:complexContent>
+      <xs:extension base="property">
+        <xs:sequence/>
+        <xs:attribute name="key" type="integerKey"/>
+        <xs:attribute name="value" type="xs:int"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="floatProperty">
+    <xs:complexContent>
+      <xs:extension base="property">
+        <xs:sequence/>
+        <xs:attribute name="key" type="floatKey"/>
+        <xs:attribute name="value" type="xs:float"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="comment">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="date" type="xs:dateTime"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="cook">
+    <xs:complexContent>
+      <xs:extension base="data">
+        <xs:sequence>
+          <xs:element name="thermometer" type="thermometer" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="data" abstract="true">
+    <xs:sequence>
+      <xs:element name="comment" type="comment" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="stringproperty" type="stringProperty" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="longproperty" type="longProperty" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="integerproperty" type="integerProperty" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="booleanproperty" type="booleanProperty" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="dateproperty" type="dateProperty" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="floatproperty" type="floatProperty" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="thermometer">
+    <xs:complexContent>
+      <xs:extension base="data">
+        <xs:sequence>
+          <xs:element name="alert" type="alert" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="index" type="xs:int" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="alert">
+    <xs:complexContent>
+      <xs:extension base="data">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="longProperty">
+    <xs:complexContent>
+      <xs:extension base="property">
+        <xs:sequence/>
+        <xs:attribute name="key" type="longKey"/>
+        <xs:attribute name="value" type="xs:long"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="booleanProperty">
+    <xs:complexContent>
+      <xs:extension base="property">
+        <xs:sequence/>
+        <xs:attribute name="key" type="booleanKey"/>
+        <xs:attribute name="value" type="xs:boolean"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="dateProperty">
+    <xs:complexContent>
+      <xs:extension base="property">
+        <xs:sequence/>
+        <xs:attribute name="key" type="dateKey"/>
+        <xs:attribute name="value" type="xs:dateTime"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:simpleType name="stringKey">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="label"/>
+      <xs:enumeration value="email"/>
+      <xs:enumeration value="color"/>
+      <xs:enumeration value="macaddress"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="integerKey">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="fantemperatureindex"/>
+      <xs:enumeration value="index"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="floatKey">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="sensortemperature"/>
+      <xs:enumeration value="mintemperature"/>
+      <xs:enumeration value="fanrpm"/>
+      <xs:enumeration value="maxtemperature"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="longKey">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="utctime"/>
+      <xs:enumeration value="sleep"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="booleanKey">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="light"/>
+      <xs:enumeration value="vibrate"/>
+      <xs:enumeration value="sound"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="dateKey">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="creation"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
+

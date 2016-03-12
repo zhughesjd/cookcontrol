@@ -1,20 +1,20 @@
 package net.joshuahughes.cookcontrol.data;
 
-import java.util.ArrayList;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+
+import ca.odell.glazedlists.BasicEventList;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "cook",propOrder = {"thermometer"})
 @XmlRootElement
 public class Cook extends Data<Thermometer>
 {
-    ArrayList<Thermometer> thermometer = new ArrayList<>();
+	BasicEventList<Thermometer> thermometer = new BasicEventList<>();
+
 	@Override
-	public ArrayList<Thermometer> getChildren() {
+	public BasicEventList<Thermometer> getChildren() {
 		return thermometer;
 	}
+
 }
