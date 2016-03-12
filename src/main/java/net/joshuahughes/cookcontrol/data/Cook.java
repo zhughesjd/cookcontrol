@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement
 public class Cook extends Data<Thermometer>
 {
-    private ArrayList<Thermometer> thermometer = new ArrayList<>();
+    ArrayList<Thermometer> thermometer = new ArrayList<>();
 	@Override
 	public ArrayList<Thermometer> getChildren() {
 		return thermometer;

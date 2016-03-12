@@ -12,8 +12,8 @@ import javax.xml.bind.annotation.XmlType;
 public class Thermometer extends Data<Alert>
 {
 	@XmlAttribute
-	private int index;
-	private ArrayList<Alert> alert = new ArrayList<>();
+	int index;
+	ArrayList<Alert> alert = new ArrayList<>();
 	
 	public Thermometer(int index)
 	{

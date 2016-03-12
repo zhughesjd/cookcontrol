@@ -10,10 +10,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "property")
 public class Property{
 	@XmlAttribute
-	private Key key;
+	Key key;
 	@XmlAttribute
-	private String value;
+	String value;
 	@XmlAttribute
-	private boolean editable;
+	boolean editable;
 	
 }

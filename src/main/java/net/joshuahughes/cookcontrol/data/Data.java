@@ -1,11 +1,9 @@
 package net.joshuahughes.cookcontrol.data;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -14,9 +12,7 @@ import javax.xml.bind.annotation.XmlType;
 	    "property"
 })
 public abstract class Data <C extends Data<?>> {
-	@XmlAttribute
-	protected Date creation;
-    protected ArrayList<Comment> comment = new ArrayList<>();
-    protected ArrayList<Property> property = new ArrayList<Property>();
+    ArrayList<Comment> comment = new ArrayList<>();
+    ArrayList<Property> property = new ArrayList<Property>();
     public abstract ArrayList<C> getChildren();
 }
