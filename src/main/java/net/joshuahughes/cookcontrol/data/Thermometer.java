@@ -12,11 +12,18 @@ public class Thermometer extends Data<Alert>
 	@XmlAttribute
 	int index;
 	BasicEventList<Alert> alert = new BasicEventList<>();
+	public Thermometer()
+	{
+		
+	}
 	public Thermometer(int index)
 	{
 		this.index = index;
 	}
 	public BasicEventList<Alert> getChildren() {
 		return alert;
+	}
+	public int getIndex() {
+		return index;
 	}
 }

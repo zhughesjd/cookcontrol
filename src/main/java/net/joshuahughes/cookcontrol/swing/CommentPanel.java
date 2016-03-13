@@ -8,8 +8,7 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.util.Date;
-import java.util.List;
+import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -23,7 +22,8 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import net.joshuahughes.cookcontrol.xml.Type.Comment;
+import net.joshuahughes.cookcontrol.data.Comment;
+
 
 public class CommentPanel extends JPanel
 {
@@ -31,18 +31,18 @@ public class CommentPanel extends JPanel
 	BackedListModel<Comment> model;
 	JList<Comment> list;
 	JTextArea area = new JTextArea();
-	public CommentPanel(List<Comment> commentList)
+	public CommentPanel(ArrayList<Comment> arrayList)
 	{
 		super(new BorderLayout());
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Comments"));
-		list = new JList<>(model = new BackedListModel<>(commentList));
+		list = new JList<>(model = new BackedListModel<Comment>(arrayList));
 		ListCellRenderer<? super Comment> defaultRenderer = list.getCellRenderer();
 		list.setCellRenderer(new ListCellRenderer<Comment>() {
 			@Override
 			public Component getListCellRendererComponent(JList<? extends Comment> list, Comment value, int index,
 					boolean isSelected, boolean cellHasFocus) {
 				UIResource component = (UIResource) defaultRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				component.setText(new Date(value.getTime()).toString());
+				component.setText(value.getDate().toString());
 				return component;
 			}
 		});
@@ -76,7 +76,6 @@ public class CommentPanel extends JPanel
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Comment comment = new Comment();
-				comment.setTime(System.currentTimeMillis());
 				comment.setRemark("remark:");
 				model.addElement(comment);
 				list.setSelectedIndex(model.getSize()-1);

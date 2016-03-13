@@ -39,57 +39,40 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
-import net.joshuahughes.cookcontrol.enumproperties.Thermometer;
-import net.joshuahughes.cookcontrol.xml.Alerttype;
-import net.joshuahughes.cookcontrol.xml.Type;
-import net.joshuahughes.cookcontrol.xml.Type.Property;
+import net.joshuahughes.cookcontrol.Key;
+import net.joshuahughes.cookcontrol.data.Alert;
+import net.joshuahughes.cookcontrol.data.Data;
+import net.joshuahughes.cookcontrol.data.Thermometer;
+import net.joshuahughes.cookcontrol.data.property.Property;
+import net.joshuahughes.cookcontrol.data.property.StringProperty.StringKey;
+
 
 @SuppressWarnings("unchecked")
-public abstract class Element<T extends Type,C extends Element<?, ?>> extends JPanel
+public abstract class DataPanel<C extends Data<?>,D extends Data<C>,CP extends DataPanel<?,?,?>> extends JPanel
 {
 	private static final long serialVersionUID = -4605336947758325544L;
 	
-	public interface Key<T>{public T fromString(String s);}
-	public static enum LongKey implements Key<Long>{utctime,sleep;public Long fromString(String s){return Long.valueOf(s);}}
-	public static enum IntKey implements Key<Integer>{fantemperatureindex,index;public Integer fromString(String s){return Integer.valueOf(s);}}
-	public static enum FloatKey implements Key<Float>{sensortemperature,mintemperature,fanrpm,maxtemperature;public Float fromString(String s){return Float.valueOf(s);}}
-	public static enum StringKey implements Key<String>{label, email, color,macaddress;public String fromString(String s){return String.valueOf(s);}}
-	public static enum BooleanKey implements Key<Boolean>{light,vibrate,sound;public Boolean fromString(String s){return Boolean.valueOf(s);}}
+	public static String parametersFileName = DataPanel.class.getSimpleName().toLowerCase()+".txt";
 
-	public static String parametersFileName = Element.class.getSimpleName().toLowerCase()+".txt";
-
-	protected ArrayList<C> children = new ArrayList<C>();
+	protected ArrayList<CP> children = new ArrayList<CP>();
 	private LinkedHashMap<Object,Object> map = new LinkedHashMap<>();
 	private Vector<String> candidateLabels = new Vector<String>();
 	private LinkedHashSet<MouseAdapter> set = new LinkedHashSet<>();
 	ChildPanel childPanel;
-	public Element(T type,String... candidateLabelsArray) throws Exception
+	public DataPanel(D data,String... candidateLabelsArray) throws Exception
 	{
 		super(new GridBagLayout());
-		init(type);
+		init(data);
 		childPanel = new ChildPanel(children);
-		CommentPanel commentPanel = new CommentPanel(type.getComment());
+		CommentPanel commentPanel = new CommentPanel(data.getComment());
 		String label = this.getClass().getSimpleName().toLowerCase()+" "+new Date(System.currentTimeMillis()).toString();
 		putComponent(StringKey.label,label);
 		candidateLabels.addElement(label);
 		candidateLabels.addAll(Arrays.asList(candidateLabelsArray));
 
-		for(Property property : type.getProperty())
+		for(Property<?> property : data.getProperty())
 		{
-			String[] keyParts = property.getKey().toString().split("\\.");
-			Key<?> key = null;
-			if(LongKey.class.getSimpleName().equals(keyParts[0]))
-				key = Enum.valueOf(LongKey.class,property.getValue().toString());
-			if(IntKey.class.getSimpleName().equals(keyParts[0]))
-				key = Enum.valueOf(IntKey.class,property.getValue().toString());
-			if(FloatKey.class.getSimpleName().equals(keyParts[0]))
-				key = Enum.valueOf(FloatKey.class,property.getValue().toString());
-			if(StringKey.class.getSimpleName().equals(keyParts[0]))
-				key = Enum.valueOf(StringKey.class,property.getValue().toString());
-			if(BooleanKey.class.getSimpleName().equals(keyParts[0]))
-				key = Enum.valueOf(BooleanKey.class,property.getValue().toString());
-			if(key!=null)
-				this.putObject(key,key.fromString(property.getValue().toString()));
+			putObject(property.getKey(),property.getValue());
 		}
 		JPanel centerPanel = new JPanel(new GridBagLayout());
 		centerPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),"Parameters"));
@@ -120,7 +103,7 @@ public abstract class Element<T extends Type,C extends Element<?, ?>> extends JP
 	public void load(File directory)
 	{
 	}
-	protected abstract void init(T type) throws Exception;
+	protected abstract void init(D type) throws Exception;
 	public <V,K extends Key<V>> V get(K key)
 	{
 		return process(key);
@@ -186,8 +169,8 @@ public abstract class Element<T extends Type,C extends Element<?, ?>> extends JP
 			if(button == null)
 			{
 				button = new JButton(StringKey.color.name());
-				button.setBackground(Element.getColor(colorString));
-				button.setForeground(Element.getBW(button.getBackground()));
+				button.setBackground(DataPanel.getColor(colorString));
+				button.setForeground(DataPanel.getBW(button.getBackground()));
 				button.addActionListener(new ActionListener() {
 
 					@Override
@@ -196,7 +179,7 @@ public abstract class Element<T extends Type,C extends Element<?, ?>> extends JP
 						Color color = JColorChooser.showDialog(null, "choose color", thisButton.getBackground());
 						if(color == null) return;
 						thisButton.setBackground(color);
-						thisButton.setForeground(Thermometer.getBW(thisButton.getBackground()));
+						thisButton.setForeground(Key.getBW(thisButton.getBackground()));
 					}
 				});
 				map.put(key,button);
@@ -208,8 +191,8 @@ public abstract class Element<T extends Type,C extends Element<?, ?>> extends JP
 				// get
 				if(array.length<=0) return value;
 				//put
-				button.setBackground(Element.getColor(array[0].toString()));
-				button.setForeground(Element.getBW(button.getBackground()));
+				button.setBackground(DataPanel.getColor(array[0].toString()));
+				button.setForeground(DataPanel.getBW(button.getBackground()));
 				return value;
 			}
 		}
@@ -301,19 +284,19 @@ public abstract class Element<T extends Type,C extends Element<?, ?>> extends JP
 	{
 		set.add(adapter);
 		childPanel.getChildList().addMouseListener(adapter);
-		for(C child : this.children)
+		for(CP child : this.children)
 			child.addMouseListener(adapter);
 	}
 	public class ChildPanel extends JPanel
 	{
 		private static final long serialVersionUID = -3623155910463151412L;
-		private BackedListModel<C> children;
-		private JList<C> list;
-		public ChildPanel(List<C> c)
+		private BackedListModel<CP> children;
+		private JList<CP> list;
+		public ChildPanel(List<CP> c)
 		{
 			super(new GridBagLayout());
 			JScrollPane pane = new JScrollPane(list = new JList<>(children = new BackedListModel<>(c)));
-			Class<?> clazz = (Class<?>) ((ParameterizedType)Element.this.getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+			Class<?> clazz = (Class<?>) ((ParameterizedType)DataPanel.this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 			setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),clazz.getSimpleName()));
 			GridBagConstraints gbc = new GridBagConstraints();
 
@@ -322,7 +305,7 @@ public abstract class Element<T extends Type,C extends Element<?, ?>> extends JP
 			gbc.gridwidth = 2;
 			gbc.fill = GridBagConstraints.VERTICAL;
 			add(pane,gbc);
-			if(Element.this.getClass().equals(Thermometer.class))
+			if(DataPanel.this.getClass().equals(Thermometer.class))
 			{
 				gbc.gridy++;
 				gbc.gridwidth=1;
@@ -331,7 +314,7 @@ public abstract class Element<T extends Type,C extends Element<?, ?>> extends JP
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						try{
-							children.addElement((C) new Alert(new Alerttype()));
+							children.addElement((CP) new AlertPanel(new Alert()));
 							ChildPanel.this.validate();
 							ChildPanel.this.repaint();
 						}catch(Exception exception)
@@ -353,7 +336,7 @@ public abstract class Element<T extends Type,C extends Element<?, ?>> extends JP
 
 			}
 		}
-		public JList<C> getChildList()
+		public JList<CP> getChildList()
 		{
 			return list;
 		}
