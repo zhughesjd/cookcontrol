@@ -5,9 +5,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 import net.joshuahughes.cookcontrol.Key;
+import net.joshuahughes.cookcontrol.data.property.FloatProperty.FloatKey;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-public class FloatProperty extends Property<Float>{
+public class FloatProperty extends Property<Float,FloatKey>{
 	public static enum FloatKey implements Key<Float>{sensortemperature,mintemperature,fanrpm,maxtemperature}
 	@XmlAttribute
 	FloatKey key;

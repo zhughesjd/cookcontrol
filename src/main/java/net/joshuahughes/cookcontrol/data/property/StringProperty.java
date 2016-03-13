@@ -5,9 +5,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 import net.joshuahughes.cookcontrol.Key;
+import net.joshuahughes.cookcontrol.data.property.StringProperty.StringKey;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-public class StringProperty extends Property<String>{
+public class StringProperty extends Property<String,StringKey>{
 	public static enum StringKey implements Key<String>{label, email, color,macaddress}
 	@XmlAttribute
 	StringKey key;

@@ -2,7 +2,7 @@ package net.joshuahughes.cookcontrol;
 
 import java.awt.Color;
 
-public interface Key<T> {
+public interface Key<V> {
 	public static String getString(Color color)
 	{
 		return "0x"+Integer.toHexString(color.getRGB()).substring(2);

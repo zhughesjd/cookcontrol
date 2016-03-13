@@ -7,12 +7,12 @@ import javax.xml.bind.annotation.XmlAttribute;
 import net.joshuahughes.cookcontrol.Key;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-public abstract class Property<T>{
+public abstract class Property<V,K extends Key<V>>{
 	@XmlAttribute
 	boolean editable;
 	
-	public abstract Key<T> getKey();
-	public abstract T getValue();
+	public abstract Key<V> getKey();
+	public abstract V getValue();
 	public int hashCode()
 	{
 		return getKey().hashCode();
@@ -20,7 +20,7 @@ public abstract class Property<T>{
 	public boolean equals(Object object)
 	{
 		if(object == null || !object.getClass().equals(getClass())) return false;
-		Property<?> property = (Property<?>) object;
+		Property<?,?> property = (Property<?,?>) object;
 		return getKey().equals(property.getKey());
 	}
 }

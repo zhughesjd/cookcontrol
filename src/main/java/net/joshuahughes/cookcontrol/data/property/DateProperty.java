@@ -7,9 +7,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 import net.joshuahughes.cookcontrol.Key;
+import net.joshuahughes.cookcontrol.data.property.DateProperty.DateKey;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-public class DateProperty extends Property<Date>{
+public class DateProperty extends Property<Date,DateKey>{
 	public static enum DateKey implements Key<Date>{creation}
 	@XmlAttribute
 	DateKey key;

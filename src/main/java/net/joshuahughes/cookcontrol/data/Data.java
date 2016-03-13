@@ -50,11 +50,11 @@ public abstract class Data <C extends Data<?>>{
 		return floatproperty;
 	}
 	@SuppressWarnings("unchecked")
-	public LinkedHashSet<Property<?>> getProperty()
+	public LinkedHashSet<Property<?,?>> getProperty()
 	{
-		LinkedHashSet<Property<?>> allProperties = new LinkedHashSet<>();
+		LinkedHashSet<Property<?,?>> allProperties = new LinkedHashSet<>();
 		for(Object object : new Object[]{stringproperty,longproperty,integerproperty,booleanproperty,dateproperty,floatproperty})
-			allProperties.addAll((Collection<? extends Property<?>>) object);
+			allProperties.addAll((Collection<? extends Property<?,?>>) object);
 		return allProperties;
 	}
 	public ArrayList<Comment> getComment()

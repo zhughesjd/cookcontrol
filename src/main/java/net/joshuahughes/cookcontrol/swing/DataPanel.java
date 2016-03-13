@@ -70,7 +70,7 @@ public abstract class DataPanel<C extends Data<?>,D extends Data<C>,CP extends D
 		candidateLabels.addElement(label);
 		candidateLabels.addAll(Arrays.asList(candidateLabelsArray));
 
-		for(Property<?> property : data.getProperty())
+		for(Property<?,?> property : data.getProperty())
 		{
 			putObject(property.getKey(),property.getValue());
 		}

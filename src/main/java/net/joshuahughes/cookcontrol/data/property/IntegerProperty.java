@@ -5,9 +5,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 import net.joshuahughes.cookcontrol.Key;
+import net.joshuahughes.cookcontrol.data.property.IntegerProperty.IntegerKey;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-public class IntegerProperty extends Property<Integer>{
+public class IntegerProperty extends Property<Integer,IntegerKey>{
 	public static enum IntegerKey implements Key<Integer>{fantemperatureindex,index}
 	@XmlAttribute
 	IntegerKey key;
