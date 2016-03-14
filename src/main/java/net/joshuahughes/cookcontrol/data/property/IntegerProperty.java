@@ -14,16 +14,25 @@ public class IntegerProperty extends Property<Integer,IntegerKey>{
 	IntegerKey key;
 	@XmlAttribute
 	Integer value;
+	public IntegerProperty(){}
+	public IntegerProperty(IntegerKey key, Integer value) {
+		this.key = key;
+		this.value = value;
+	}
 	public IntegerKey getKey() {
 		return key;
 	}
-	public void setKey(IntegerKey key) {
-		this.key = key;
+	public IntegerKey setKey(IntegerKey newKey) {
+		IntegerKey oldKey = this.key;
+		this.key = newKey;
+		return oldKey;
 	}
 	public Integer getValue() {
 		return value;
 	}
-	public void setValue(Integer value) {
-		this.value = value;
+	public Integer setValue(Integer newValue) {
+		Integer oldValue = this.value;
+		this.value = newValue;
+		return oldValue;
 	}
 }

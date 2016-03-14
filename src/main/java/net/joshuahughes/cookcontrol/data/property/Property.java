@@ -10,9 +10,10 @@ import net.joshuahughes.cookcontrol.Key;
 public abstract class Property<V,K extends Key<V>>{
 	@XmlAttribute
 	boolean editable;
-	
-	public abstract Key<V> getKey();
+	public abstract K getKey();
 	public abstract V getValue();
+	public abstract K setKey(K key);
+	public abstract V setValue(V value);
 	public int hashCode()
 	{
 		return getKey().hashCode();

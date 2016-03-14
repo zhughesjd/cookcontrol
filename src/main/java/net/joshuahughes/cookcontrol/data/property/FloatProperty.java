@@ -14,16 +14,26 @@ public class FloatProperty extends Property<Float,FloatKey>{
 	FloatKey key;
 	@XmlAttribute
 	Float value;
+	public FloatProperty(){}
+	public FloatProperty(FloatKey key, Float value) {
+		this.key = key;
+		this.value = value;
+	}
+
 	public FloatKey getKey() {
 		return key;
 	}
-	public void setKey(FloatKey key) {
-		this.key = key;
+	public FloatKey setKey(FloatKey newKey) {
+		FloatKey oldKey = this.key;
+		this.key = newKey;
+		return oldKey;
 	}
 	public Float getValue() {
 		return value;
 	}
-	public void setValue(Float value) {
-		this.value = value;
+	public Float setValue(Float newValue) {
+		Float oldValue = this.value;
+		this.value = newValue;
+		return oldValue;
 	}
 }

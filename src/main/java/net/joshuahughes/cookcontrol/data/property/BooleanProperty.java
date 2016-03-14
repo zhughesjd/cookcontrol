@@ -15,16 +15,25 @@ public class BooleanProperty extends Property<Boolean,BooleanKey>{
 	BooleanKey key;
 	@XmlAttribute
 	Boolean value;
+	public BooleanProperty(){}
+	public BooleanProperty(BooleanKey key,Boolean value) {
+		this.key = key;
+		this.value = value;
+	}
 	public BooleanKey getKey() {
 		return key;
 	}
-	public void setKey(BooleanKey key) {
-		this.key = key;
+	public BooleanKey setKey(BooleanKey newKey) {
+		BooleanKey oldKey = this.key;
+		this.key = newKey;
+		return oldKey;
 	}
 	public Boolean getValue() {
 		return value;
 	}
-	public void setValue(Boolean value) {
-		this.value = value;
+	public Boolean setValue(Boolean newValue) {
+		Boolean oldValue = this.value;
+		this.value = newValue;
+		return oldValue;
 	}
 }

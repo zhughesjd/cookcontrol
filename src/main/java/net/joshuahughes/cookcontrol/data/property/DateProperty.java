@@ -16,17 +16,25 @@ public class DateProperty extends Property<Date,DateKey>{
 	DateKey key;
 	@XmlAttribute
 	Date value;
-	
+	public DateProperty(){}
+	public DateProperty(DateKey key,Date value) {
+		this.key = key;
+		this.value = value;
+	}
 	public DateKey getKey() {
 		return key;
 	}
-	public void setKey(DateKey key) {
-		this.key = key;
+	public DateKey setKey(DateKey newKey) {
+		DateKey oldKey = this.key;
+		this.key = newKey;
+		return oldKey;
 	}
 	public Date getValue() {
 		return value;
 	}
-	public void setValue(Date value) {
-		this.value = value;
+	public Date setValue(Date newValue) {
+		Date oldValue = this.value;
+		this.value = newValue;
+		return oldValue;
 	}
 }

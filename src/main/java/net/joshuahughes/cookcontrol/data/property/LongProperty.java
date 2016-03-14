@@ -14,16 +14,25 @@ public class LongProperty extends Property<Long,LongKey>{
 	LongKey key;
 	@XmlAttribute
 	Long value;
+	public LongProperty(){}
+	public LongProperty(LongKey key, Long value) {
+		this.key = key;
+		this.value = value;
+	}
 	public LongKey getKey() {
 		return key;
 	}
-	public void setKey(LongKey key) {
-		this.key = key;
+	public LongKey setKey(LongKey newKey) {
+		LongKey oldKey = this.key;
+		this.key = newKey;
+		return oldKey;
 	}
 	public Long getValue() {
 		return value;
 	}
-	public void setValue(Long value) {
-		this.value = value;
+	public Long setValue(Long newValue) {
+		Long oldValue = this.value;
+		this.value = newValue;
+		return oldValue;
 	}
 }

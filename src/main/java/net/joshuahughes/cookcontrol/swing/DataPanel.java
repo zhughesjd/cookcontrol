@@ -18,7 +18,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -65,12 +64,11 @@ public abstract class DataPanel<C extends Data<?>,D extends Data<C>,CP extends D
 		init(data);
 		childPanel = new ChildPanel(children);
 		CommentPanel commentPanel = new CommentPanel(data.getComment());
-		String label = this.getClass().getSimpleName().toLowerCase()+" "+new Date(System.currentTimeMillis()).toString();
-		putComponent(StringKey.label,label);
-		candidateLabels.addElement(label);
 		candidateLabels.addAll(Arrays.asList(candidateLabelsArray));
-
-		for(Property<?,?> property : data.getProperty())
+		String value = data.getValue(StringKey.label);
+		if(value!=null) candidateLabels.add(value);
+			
+		for(Property<?,?> property : data.getAllProperties())
 		{
 			putObject(property.getKey(),property.getValue());
 		}

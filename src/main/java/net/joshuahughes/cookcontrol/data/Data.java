@@ -3,6 +3,7 @@ package net.joshuahughes.cookcontrol.data;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Random;
 
@@ -11,8 +12,10 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 
 import ca.odell.glazedlists.BasicEventList;
+import net.joshuahughes.cookcontrol.Key;
 import net.joshuahughes.cookcontrol.data.property.BooleanProperty;
 import net.joshuahughes.cookcontrol.data.property.DateProperty;
+import net.joshuahughes.cookcontrol.data.property.DateProperty.DateKey;
 import net.joshuahughes.cookcontrol.data.property.FloatProperty;
 import net.joshuahughes.cookcontrol.data.property.IntegerProperty;
 import net.joshuahughes.cookcontrol.data.property.IntegerProperty.IntegerKey;
@@ -21,6 +24,7 @@ import net.joshuahughes.cookcontrol.data.property.Property;
 import net.joshuahughes.cookcontrol.data.property.StringProperty;
 import net.joshuahughes.cookcontrol.data.property.StringProperty.StringKey;
 
+@SuppressWarnings("unchecked")
 @XmlAccessorType(XmlAccessType.FIELD)
 public abstract class Data <C extends Data<?>>{
 	ArrayList<Comment> comment = new ArrayList<>();
@@ -30,7 +34,12 @@ public abstract class Data <C extends Data<?>>{
 	LinkedHashSet<BooleanProperty> booleanproperty = new LinkedHashSet<>();
 	LinkedHashSet<DateProperty> dateproperty = new LinkedHashSet<>();
 	LinkedHashSet<FloatProperty> floatproperty = new LinkedHashSet<>();
-	
+	public Data()
+	{
+		String label = this.getClass().getSimpleName().toLowerCase()+" "+new Date(System.currentTimeMillis()).toString();
+		stringproperty.add(new StringProperty(StringKey.label,label));
+		dateproperty.add(new DateProperty(DateKey.creation,new Date(System.currentTimeMillis())));
+	}
 	public LinkedHashSet<StringProperty> getStringproperty() {
 		return stringproperty;
 	}
@@ -49,13 +58,21 @@ public abstract class Data <C extends Data<?>>{
 	public LinkedHashSet<FloatProperty> getFloatproperty() {
 		return floatproperty;
 	}
-	@SuppressWarnings("unchecked")
-	public LinkedHashSet<Property<?,?>> getProperty()
+	public LinkedHashSet<Property<?,?>> getAllProperties()
 	{
 		LinkedHashSet<Property<?,?>> allProperties = new LinkedHashSet<>();
 		for(Object object : new Object[]{stringproperty,longproperty,integerproperty,booleanproperty,dateproperty,floatproperty})
 			allProperties.addAll((Collection<? extends Property<?,?>>) object);
 		return allProperties;
+	}
+	public<V> V getValue(Key<?> label)
+	{
+		for(Property<?, ?> property : getAllProperties())
+		{
+			if(property.getKey().equals(label))
+				return (V) property.getValue();
+		}
+		return null;
 	}
 	public ArrayList<Comment> getComment()
 	{
@@ -83,20 +100,9 @@ public abstract class Data <C extends Data<?>>{
 					comment.setRemark("remark:"+c);
 					alert.getComment().add(comment);
 				}
-				StringProperty sp = new StringProperty();
-				sp.setKey(StringKey.email);
-				sp.setValue("sp");
-				alert.getStringproperty().add(sp);
-
-				StringProperty sp1 = new StringProperty();
-				sp1.setKey(StringKey.email);
-				sp1.setValue("sp1");
-				alert.getStringproperty().add(sp1);
-
-				IntegerProperty si = new IntegerProperty();
-				si.setKey(IntegerKey.index);
-				si.setValue(-2);
-				alert.getIntegerproperty().add(si);
+				alert.getStringproperty().add(new StringProperty(StringKey.email,"sp"));
+				alert.getStringproperty().add(new StringProperty(StringKey.color,"sp1"));
+				alert.getIntegerproperty().add(new IntegerProperty(IntegerKey.index, -1));
 
 				thermometer.getChildren().add(alert);
 			}
@@ -106,15 +112,8 @@ public abstract class Data <C extends Data<?>>{
 				comment.setRemark("remark T:"+c);
 				thermometer.getComment().add(comment);
 			}
-			StringProperty sp = new StringProperty();
-			sp.setKey(StringKey.email);
-			sp.setValue("therm");
-			thermometer.getStringproperty().add(sp);
-
-			IntegerProperty si = new IntegerProperty();
-			si.setKey(IntegerKey.index);
-			si.setValue(2);
-			thermometer.getIntegerproperty().add(si);
+			thermometer.getStringproperty().add(new StringProperty(StringKey.email,"test"));
+			thermometer.getIntegerproperty().add(new IntegerProperty(IntegerKey.index,4));
 			cook.getChildren().add(thermometer);
 		}
 		for(int c =0;c<random.nextInt(10);c++)
@@ -123,15 +122,9 @@ public abstract class Data <C extends Data<?>>{
 			comment.setRemark("remark C:"+c);
 			cook.getComment().add(comment);
 		}
-		StringProperty sp = new StringProperty();
-		sp.setKey(StringKey.email);
-		sp.setValue("ck");
-		cook.getStringproperty().add(sp);
+		cook.getStringproperty().add(new StringProperty(StringKey.color,"sdfadsfaf"));
 
-		IntegerProperty si = new IntegerProperty();
-		si.setKey(IntegerKey.index);
-		si.setValue(200);
-		cook.getIntegerproperty().add(si);
+		cook.getIntegerproperty().add(new IntegerProperty(IntegerKey.index, 200));
 		JAXB.marshal(cook, new File("text.xml"));
 	}
 }

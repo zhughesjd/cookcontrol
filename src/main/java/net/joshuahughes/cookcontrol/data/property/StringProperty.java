@@ -14,16 +14,27 @@ public class StringProperty extends Property<String,StringKey>{
 	StringKey key;
 	@XmlAttribute
 	String value;
+	public StringProperty() {
+		
+	}
+	public StringProperty(StringKey key, String value) {
+		this.key = key;
+		this.value = value;
+	}
 	public StringKey getKey() {
 		return key;
 	}
-	public void setKey(StringKey key) {
-		this.key = key;
+	public StringKey setKey(StringKey newKey) {
+		StringKey oldKey = this.key;
+		this.key = newKey;
+		return oldKey;
 	}
 	public String getValue() {
 		return value;
 	}
-	public void setValue(String value) {
-		this.value = value;
+	public String setValue(String newValue) {
+		String oldValue = this.value;
+		this.value = newValue;
+		return oldValue;
 	}
 }
