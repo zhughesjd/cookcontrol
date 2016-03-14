@@ -17,7 +17,8 @@ public class DateProperty extends Property<Date,DateKey>{
 	@XmlAttribute
 	Date value;
 	public DateProperty(){}
-	public DateProperty(DateKey key,Date value) {
+	public DateProperty(DateKey key,Date value,boolean editable) {
+		super(editable);
 		this.key = key;
 		this.value = value;
 	}

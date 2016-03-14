@@ -15,7 +15,8 @@ public class FloatProperty extends Property<Float,FloatKey>{
 	@XmlAttribute
 	Float value;
 	public FloatProperty(){}
-	public FloatProperty(FloatKey key, Float value) {
+	public FloatProperty(FloatKey key, Float value,boolean editable) {
+		super(editable);
 		this.key = key;
 		this.value = value;
 	}

@@ -9,7 +9,12 @@ import net.joshuahughes.cookcontrol.Key;
 @XmlAccessorType(XmlAccessType.FIELD)
 public abstract class Property<V,K extends Key<V>>{
 	@XmlAttribute
-	boolean editable;
+	boolean editable = true;
+	public Property(){}
+	public Property(boolean editable)
+	{
+		this.editable=editable;
+	}
 	public abstract K getKey();
 	public abstract V getValue();
 	public abstract K setKey(K key);

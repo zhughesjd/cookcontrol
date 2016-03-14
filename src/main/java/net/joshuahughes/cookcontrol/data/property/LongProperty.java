@@ -15,7 +15,8 @@ public class LongProperty extends Property<Long,LongKey>{
 	@XmlAttribute
 	Long value;
 	public LongProperty(){}
-	public LongProperty(LongKey key, Long value) {
+	public LongProperty(LongKey key, Long value,boolean editable) {
+		super(editable);
 		this.key = key;
 		this.value = value;
 	}

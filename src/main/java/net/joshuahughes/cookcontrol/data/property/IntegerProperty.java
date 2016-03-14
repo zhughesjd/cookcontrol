@@ -15,7 +15,8 @@ public class IntegerProperty extends Property<Integer,IntegerKey>{
 	@XmlAttribute
 	Integer value;
 	public IntegerProperty(){}
-	public IntegerProperty(IntegerKey key, Integer value) {
+	public IntegerProperty(IntegerKey key, Integer value, boolean editable) {
+		super(editable);
 		this.key = key;
 		this.value = value;
 	}

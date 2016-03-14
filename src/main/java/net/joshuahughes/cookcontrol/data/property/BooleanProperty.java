@@ -16,7 +16,8 @@ public class BooleanProperty extends Property<Boolean,BooleanKey>{
 	@XmlAttribute
 	Boolean value;
 	public BooleanProperty(){}
-	public BooleanProperty(BooleanKey key,Boolean value) {
+	public BooleanProperty(BooleanKey key,Boolean value,boolean editable) {
+		super(editable);
 		this.key = key;
 		this.value = value;
 	}

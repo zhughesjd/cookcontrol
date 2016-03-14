@@ -1,5 +1,6 @@
 package net.joshuahughes.cookcontrol.data;
 
+import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,8 +38,8 @@ public abstract class Data <C extends Data<?>>{
 	public Data()
 	{
 		String label = this.getClass().getSimpleName().toLowerCase()+" "+new Date(System.currentTimeMillis()).toString();
-		stringproperty.add(new StringProperty(StringKey.label,label));
-		dateproperty.add(new DateProperty(DateKey.creation,new Date(System.currentTimeMillis())));
+		stringproperty.add(new StringProperty(StringKey.label,label,true));
+		dateproperty.add(new DateProperty(DateKey.creation,new Date(System.currentTimeMillis()),false));
 	}
 	public LinkedHashSet<StringProperty> getStringproperty() {
 		return stringproperty;
@@ -100,9 +101,9 @@ public abstract class Data <C extends Data<?>>{
 					comment.setRemark("remark:"+c);
 					alert.getComment().add(comment);
 				}
-				alert.getStringproperty().add(new StringProperty(StringKey.email,"sp"));
-				alert.getStringproperty().add(new StringProperty(StringKey.color,"sp1"));
-				alert.getIntegerproperty().add(new IntegerProperty(IntegerKey.index, -1));
+				alert.getStringproperty().add(new StringProperty(StringKey.email,"sp",true));
+				alert.getStringproperty().add(new StringProperty(StringKey.color,Key.getString(Color.red),true));
+				alert.getIntegerproperty().add(new IntegerProperty(IntegerKey.index, -1,true));
 
 				thermometer.getChildren().add(alert);
 			}
@@ -112,8 +113,8 @@ public abstract class Data <C extends Data<?>>{
 				comment.setRemark("remark T:"+c);
 				thermometer.getComment().add(comment);
 			}
-			thermometer.getStringproperty().add(new StringProperty(StringKey.email,"test"));
-			thermometer.getIntegerproperty().add(new IntegerProperty(IntegerKey.index,4));
+			thermometer.getStringproperty().add(new StringProperty(StringKey.email,"test",true));
+			thermometer.getIntegerproperty().add(new IntegerProperty(IntegerKey.index,4,true));
 			cook.getChildren().add(thermometer);
 		}
 		for(int c =0;c<random.nextInt(10);c++)
@@ -122,9 +123,9 @@ public abstract class Data <C extends Data<?>>{
 			comment.setRemark("remark C:"+c);
 			cook.getComment().add(comment);
 		}
-		cook.getStringproperty().add(new StringProperty(StringKey.color,"sdfadsfaf"));
+		cook.getStringproperty().add(new StringProperty(StringKey.color,Key.getString(Color.blue),true));
 
-		cook.getIntegerproperty().add(new IntegerProperty(IntegerKey.index, 200));
+		cook.getIntegerproperty().add(new IntegerProperty(IntegerKey.index, 200,true));
 		JAXB.marshal(cook, new File("text.xml"));
 	}
 }

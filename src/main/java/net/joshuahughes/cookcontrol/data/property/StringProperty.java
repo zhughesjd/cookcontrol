@@ -15,9 +15,9 @@ public class StringProperty extends Property<String,StringKey>{
 	@XmlAttribute
 	String value;
 	public StringProperty() {
-		
 	}
-	public StringProperty(StringKey key, String value) {
+	public StringProperty(StringKey key, String value,boolean editable) {
+		super(editable);
 		this.key = key;
 		this.value = value;
 	}

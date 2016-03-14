@@ -16,7 +16,6 @@ public class ThermometerPanel extends DataPanel<Alert,Thermometer,AlertPanel>
 	public ThermometerPanel(Thermometer type,int index) throws Exception
 	{
 		super(type,Arrays.asList(new String[]{"probe","ambient","beef","chicken","pork","fish"}).stream().map(i->i+" "+index).collect(Collectors.toList()).toArray(new String[0]));
-		putComponent(StringKey.label,index<0?"sensor":"probe "+index);
 	}
 	@Override
 	protected void init(Thermometer type) throws Exception 
